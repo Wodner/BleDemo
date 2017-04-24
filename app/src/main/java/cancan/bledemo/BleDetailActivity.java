@@ -2,12 +2,11 @@ package cancan.bledemo;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -37,13 +36,13 @@ import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import cancan.bledemo.adapter.SittingDataAdapter;
 import cancan.bledemo.model.FirmwareModel;
 import cancan.bledemo.model.SittingDataModel;
 import cancan.bledemo.model.StepModel;
@@ -68,10 +67,9 @@ public class BleDetailActivity extends AppCompatActivity {
     RelativeLayout rlConnectStatus;
 
 
-    @Bind(R.id.current_sit_recyclerview)
-    RecyclerView correntSitRecyclerView;
-    @Bind(R.id.history_sit_recyclerview)
-    RecyclerView historySitRecyclerview;
+//    @Bind(R.id.current_sit_recyclerview)
+//    RecyclerView correntSitRecyclerView;
+
 
 
     @Bind(R.id.btn_get_battery)
@@ -96,9 +94,6 @@ public class BleDetailActivity extends AppCompatActivity {
     private Context mContext;
     private BleRequest mBleRequest;
 
-
-    private SittingDataAdapter sittingDataAdapter;
-    private SittingDataAdapter sittingHistoryDataAdapter;
     private List<SittingDataModel> sittingDataModelList = new ArrayList<SittingDataModel>();
 
 
@@ -114,27 +109,12 @@ public class BleDetailActivity extends AppCompatActivity {
     private void init() {
         mContext = this;
         mBleRequest = new BleRequest();
-        initHistorySitView();
-        initCurrentSitView();
         bleMac = this.getIntent().getStringExtra("mac");
         bleName = this.getIntent().getStringExtra("name");
-//        getSupportActionBar().setTitle(bleName);
         initSynListener();
         initUserStatus();
     }
 
-
-    private void initHistorySitView(){
-        sittingHistoryDataAdapter = new SittingDataAdapter(mContext);
-        historySitRecyclerview .setLayoutManager(new LinearLayoutManager(mContext));
-        historySitRecyclerview.setAdapter(sittingHistoryDataAdapter);
-    }
-
-     private void initCurrentSitView(){
-         sittingDataAdapter = new SittingDataAdapter(mContext);
-         correntSitRecyclerView .setLayoutManager(new LinearLayoutManager(mContext));
-         correntSitRecyclerView.setAdapter(sittingDataAdapter);
-     }
 
 
     private void initUserStatus(){
@@ -166,6 +146,7 @@ public class BleDetailActivity extends AppCompatActivity {
             @Override
             public void sendFinishSyn() {
                 Log.d(TAG, "同步完成标志... ");
+                Toast.makeText(mContext,"数据同步完成",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -178,7 +159,6 @@ public class BleDetailActivity extends AppCompatActivity {
                 Log.d(TAG, "坐姿返回信息... " + result);
                 SittingDataModel sittingDataModel =  JsonParser.parseWithGson(SittingDataModel.class,result);
                 sittingDataModelList.add(sittingDataModel);
-                sittingHistoryDataAdapter.setData(sittingDataModelList);
             }
         });
     }
@@ -240,7 +220,6 @@ public class BleDetailActivity extends AppCompatActivity {
             isConnected = (status == STATUS_CONNECTED);
             if(!isConnected){
                 sittingDataModelList.clear();
-                sittingHistoryDataAdapter.clear();
             }
             connectDeviceIfNeeded();
         }
@@ -275,14 +254,27 @@ public class BleDetailActivity extends AppCompatActivity {
 
 
     @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_sit_status,
-            R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu})
+            R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status})
     public void onClick(View view) {
         switch (view.getId()) {
+
+
+            case R.id.btn_history_sit_status:
+                if(sittingDataModelList.size()>0){
+                    Intent intent = new Intent();
+                    intent.setClass(BleDetailActivity.this, BleHistorySitStatusActivity.class);
+                    intent.putExtra("title","历史坐姿数据");
+                    intent.putExtra("history_sit", (Serializable) sittingDataModelList);
+                    startActivity(intent);
+                }else {
+                    Toast.makeText(mContext,"没有历史坐姿数据",Toast.LENGTH_SHORT).show();
+                }
+                break;
             case R.id.btn_get_battery:
                 mBleRequest.getBattery(mContext, bleMac, new BleBateryListener() {
                     @Override
                     public void onBattery(int level) {
-                        btnGetBattery.setText("获取电池电量  " + level + "%");
+                        btnGetBattery.setText("获取电池电量：  " + level + "%");
                     }
                 });
                 break;
@@ -290,7 +282,7 @@ public class BleDetailActivity extends AppCompatActivity {
                 mBleRequest.getMotorShockFlag(mContext, bleMac, new BleMotorFlagListener() {
                     @Override
                     public void onMotor(String motorFlag,int second) {
-                        btnGetMonitor.setText("读取马达震动 " + motorFlag + " " + second + "s");
+                        btnGetMonitor.setText("读取马达震动标志位：" + motorFlag + "  时间：" + second + "s");
                     }
                 });
                 break;
@@ -302,8 +294,6 @@ public class BleDetailActivity extends AppCompatActivity {
                     }
                 });
                 break;
-
-
             case R.id.btn_enable_monitor:
                 setMotorShock();
                 break;
@@ -344,7 +334,15 @@ public class BleDetailActivity extends AppCompatActivity {
                         List<SittingDataModel> sittingDataModelList = new ArrayList<SittingDataModel>();
                         SittingDataModel sittingDataModel =  JsonParser.parseWithGson(SittingDataModel.class,result);
                         sittingDataModelList.add(sittingDataModel);
-                        sittingDataAdapter.setData(sittingDataModelList);
+                        if(sittingDataModelList.size()>0){
+                            Intent intent = new Intent();
+                            intent.setClass(BleDetailActivity.this, BleHistorySitStatusActivity.class);
+                            intent.putExtra("history_sit", (Serializable) sittingDataModelList);
+                            intent.putExtra("title","当前坐姿数据");
+                            startActivity(intent);
+                        }else {
+                            Toast.makeText(mContext,"没有坐姿数据",Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
                 break;
@@ -372,7 +370,6 @@ public class BleDetailActivity extends AppCompatActivity {
         editTime.setHint("最大 120 S");
         new  AlertDialog.Builder(mContext)
                 .setTitle("设置马达震动" )
-                .setIcon(android.R.drawable.ic_dialog_info)
                 .setView(editTime)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override

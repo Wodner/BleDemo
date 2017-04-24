@@ -34,8 +34,12 @@
             </intent-filter>
         </activity>
 
-
+        <!--连接设备后页面详情-->
         <activity android:name=".BleDetailActivity"
+            android:screenOrientation="portrait"/>
+
+        <!--查看历史数据页面-->
+        <activity android:name=".BleHistorySitStatusActivity"
             android:screenOrientation="portrait"/>
 
 
@@ -43,15 +47,12 @@
         <service
             android:name="com.inuker.bluetooth.library.BluetoothService" />
 
-        <!-- 空中升级使用 -->
+        <!-- 空中升级使用服务 -->
         <service android:name=".dfu.DfuService"/>
 
-
+        <!--空中升级页面-->
         <activity android:name=".dfu.DfuActivity"
             android:screenOrientation="portrait"/>
-
-        <!--<activity android:name=".dfu.NotificationActivity"-->
-            <!--android:screenOrientation="portrait"/>-->
 
 
     </application>

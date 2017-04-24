@@ -6,7 +6,6 @@
 
 
     <LinearLayout
-
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -29,12 +28,6 @@
                 android:text="正在连接" />
         </RelativeLayout>
 
-    <!--<View-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="0.5dp"-->
-        <!--android:background="#aeaeae"/>-->
-
 
         <TextView
             android:id="@+id/tv_first_response"
@@ -43,107 +36,64 @@
             android:layout_height="wrap_content"
             android:text=""/>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/history_sit_recyclerview"
+
+        <Button
+            android:id="@+id/btn_history_sit_status"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="查看历史坐姿数据"/>
 
 
-        <LinearLayout
-            android:orientation="horizontal"
+        <Button
+            android:id="@+id/btn_get_battery"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/btn_get_battery"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="获取电池电量" />
-            <Button
-                android:id="@+id/btn_get_motor"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="读取马达震动" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
+            android:layout_height="wrap_content"
+            android:text="获取电池电量" />
+        <Button
+            android:id="@+id/btn_get_motor"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/btn_disable_monitor"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="关闭马达震动" />
-            <Button
-                android:id="@+id/btn_enable_monitor"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="打开马达震动" />
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:text="读取马达震动" />
 
-
-        <LinearLayout
-            android:orientation="horizontal"
+        <Button
+            android:id="@+id/btn_disable_monitor"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/btn_enable"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="设备激活命令" />
-            <Button
-                android:id="@+id/btn_disenable"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="取消激活命令" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
+            android:layout_height="wrap_content"
+            android:text="关闭马达震动" />
+        <Button
+            android:id="@+id/btn_enable_monitor"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/btn_start_dfu"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="发送升级指令" />
-            <Button
-                android:id="@+id/btn_get_current_sit_status"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="同步当前坐姿数据" />
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:text="打开马达震动" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/current_sit_recyclerview"
+
+        <Button
+            android:id="@+id/btn_enable"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="设备激活命令" />
+        <Button
+            android:id="@+id/btn_disenable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="取消激活命令" />
 
-
-
+        <Button
+            android:id="@+id/btn_start_dfu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发送升级指令" />
+        <Button
+            android:id="@+id/btn_get_current_sit_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="同步当前坐姿数据" />
 
         <Button
             android:id="@+id/btn_get_current_step_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="同步当前步数" />
-
-
-        <!--<TextView-->
-            <!--android:id="@+id/tv_step"-->
-            <!--android:gravity="center_horizontal"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content" />-->
-
-
 
 
     </LinearLayout>

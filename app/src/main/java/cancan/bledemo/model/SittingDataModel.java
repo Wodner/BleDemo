@@ -1,5 +1,6 @@
 package cancan.bledemo.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
  * 邮箱：wuwende@live.cn
  */
 
-public class SittingDataModel {
+public class SittingDataModel implements Serializable {
 
 
     /**
@@ -55,7 +56,7 @@ public class SittingDataModel {
         this.rows = rows;
     }
 
-    public static class RowsBean {
+    public static class RowsBean implements Serializable{
         /**
          * hour : 0
          * minute : 0

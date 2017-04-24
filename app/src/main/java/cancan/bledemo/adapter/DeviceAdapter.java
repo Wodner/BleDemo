@@ -52,7 +52,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MyViewHold
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
         holder.tvDevice.setText(deviceList.get(position).getName()+ "\n" +
-            deviceList.get(position).getAddress());
+            deviceList.get(position).getAddress() + "  --------  (" + deviceList.get(position).rssi + "dBm)");
         //判断是否设置了监听器
         if(onRecyclerViewItemClickListener != null){
             //为ItemView设置监听器
