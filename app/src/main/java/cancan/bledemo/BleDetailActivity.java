@@ -27,13 +27,15 @@ import com.inuker.bluetooth.library.myble.ClientManager;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
+import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleDfuModelListener;
 import com.inuker.bluetooth.library.myble.callback.BleDisableDeviceListener;
 import com.inuker.bluetooth.library.myble.callback.BleEnableDeviceListener;
-import com.inuker.bluetooth.library.myble.callback.BleFinishSittingListener;
 import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
+import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
+import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,7 @@ import butterknife.OnClick;
 import cancan.bledemo.adapter.SittingDataAdapter;
 import cancan.bledemo.model.FirmwareModel;
 import cancan.bledemo.model.SittingDataModel;
+import cancan.bledemo.model.StepModel;
 import cancan.bledemo.utils.JsonParser;
 
 import static com.inuker.bluetooth.library.Code.REQUEST_SUCCESS;
@@ -76,12 +79,10 @@ public class BleDetailActivity extends AppCompatActivity {
     @Bind(R.id.btn_get_motor)
     Button btnGetMonitor;
 
-//    @Bind(R.id.btn_enable)
-//    Button btnEnable;
-//    @Bind(R.id.btn_disenable)
-//    Button btnDisenable;
-//    @Bind(R.id.btn_start_dfu)
-//    Button btnStartDfu;
+
+    @Bind(R.id.btn_get_current_step_status)
+    Button btnGetCurrentStep;
+
 
     @Bind(R.id.tv_first_response)
     TextView tvFiestResponse;
@@ -117,8 +118,9 @@ public class BleDetailActivity extends AppCompatActivity {
         initCurrentSitView();
         bleMac = this.getIntent().getStringExtra("mac");
         bleName = this.getIntent().getStringExtra("name");
-        getSupportActionBar().setTitle(bleName);
-        initListener();
+//        getSupportActionBar().setTitle(bleName);
+        initSynListener();
+        initUserStatus();
     }
 
 
@@ -135,9 +137,19 @@ public class BleDetailActivity extends AppCompatActivity {
      }
 
 
-    private void initListener() {
+    private void initUserStatus(){
+        BLE.setOnUserStatusAndSittingStatusListener(new BleUserStatusAndSittingStatusListener() {
+            @Override
+            public void onStatus(String userStatus, String sittingStatus) {
+                String status = "用户状态:" + userStatus +  " —— 坐姿:" + sittingStatus;
+                getSupportActionBar().setTitle(status);
+            }
+        });
+    }
+
+    private void initSynListener() {
         /* 每次连接 都会数据进行同步*/
-        BLE.setOnBleSynListener(new BleSynDataListener() {
+        BLE.setOnBleSynListener(mContext,bleMac,new BleSynDataListener() {
             @Override
             public void onFirstResponse(String result) {
                 Log.d(TAG, "返回信息... " + result);
@@ -149,32 +161,24 @@ public class BleDetailActivity extends AppCompatActivity {
             @Override
             public void startSynTime(boolean isStart) {
                 Log.d(TAG, "开始同步... " + isStart);
-                if (isStart)
-                    mBleRequest.synTime(mContext, bleMac);
             }
 
             @Override
             public void sendFinishSyn() {
-                mBleRequest.finishSyn(mContext, bleMac, new BleRequest.SynFinishListener() {
-                    @Override
-                    public void finishSyn(boolean isFinish) {
-                        Log.d(TAG, "同步完成标志... " + isFinish);
-                    }
-                });
+                Log.d(TAG, "同步完成标志... ");
             }
 
             @Override
-            public void onSittingSyn(String result) {
+            public void onHistoryStepSyn(String result) {
+
+            }
+
+            @Override
+            public void onHistorySittingSyn(String result) {
                 Log.d(TAG, "坐姿返回信息... " + result);
                 SittingDataModel sittingDataModel =  JsonParser.parseWithGson(SittingDataModel.class,result);
                 sittingDataModelList.add(sittingDataModel);
                 sittingHistoryDataAdapter.setData(sittingDataModelList);
-                mBleRequest.setFinishSittingSyn(mContext, bleMac, new BleFinishSittingListener() {
-                    @Override
-                    public void onFinish(boolean isFinish) {
-                        Log.d(TAG, "同步坐姿完成标志... " + isFinish);
-                    }
-                });
             }
         });
     }
@@ -202,9 +206,23 @@ public class BleDetailActivity extends AppCompatActivity {
                 if (code == REQUEST_SUCCESS) {
                     progressbar.setVisibility(View.GONE);
                     tvConnectStatus.setText("已连接 " + bleMac);
-                    mBleRequest.openDeafultNotify(mContext,bleMac);
+                    mBleRequest.openDeafultNotify(mContext, bleMac, new BleDefaultNotifyListener() {
+                        @Override
+                        public void onOpen(boolean isOpen) {
+                            if (!isOpen){
 
-                    mBleRequest.openOtherNotify(mContext,bleMac);
+                            }
+                        }
+                    });
+
+                    mBleRequest.openOtherNotify(mContext, bleMac, new BleOtherNotifyListener() {
+                        @Override
+                        public void onOpen(boolean isOpen) {
+                            if (!isOpen){
+
+                            }
+                        }
+                    });
                 }else {
                     progressbar.setVisibility(View.VISIBLE);
                 }
@@ -241,14 +259,16 @@ public class BleDetailActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         ClientManager.getClient(this).unregisterConnectStatusListener(bleMac, mConnectStatusListener);
-        mBleRequest.closeDeafultNotify(mContext,bleMac);
-        mBleRequest.closeOtherNotify(mContext,bleMac);
+
+
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mBleRequest.closeDeafultNotify(mContext,bleMac);
+        mBleRequest.closeOtherNotify(mContext,bleMac);
         mBleRequest.disconnect(mContext,bleMac);
     }
 
@@ -334,9 +354,11 @@ public class BleDetailActivity extends AppCompatActivity {
                     @Override
                     public void onStep(String result) {
                         Log.d(TAG, " 返回步数信息 -------- >  " + result);
+                        StepModel stepModel = JsonParser.parseWithGson(StepModel.class,result);
+                        btnGetCurrentStep.setText(stepModel.getYear()+"-"+ stepModel.getMonth()+"-"+ stepModel.getDay() + " " +
+                            stepModel.getHour() + ":" + stepModel.getMinute()+":"+ stepModel.getSecond()+ "   步数："+stepModel.getStep());
                     }
                 });
-
                 break;
         }
     }

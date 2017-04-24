@@ -9,11 +9,14 @@ import com.inuker.bluetooth.library.connect.response.BleWriteResponse;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
+import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleDfuModelListener;
 import com.inuker.bluetooth.library.myble.callback.BleDisableDeviceListener;
 import com.inuker.bluetooth.library.myble.callback.BleEnableDeviceListener;
-import com.inuker.bluetooth.library.myble.callback.BleFinishSittingListener;
+import com.inuker.bluetooth.library.myble.callback.BleHistorySittingStatusSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleHistoryStepSynListener;
 import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
+import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.myutils.BitOperator;
 import com.inuker.bluetooth.library.myble.myutils.HexStringUtils;
@@ -161,7 +164,7 @@ public class BleRequest {
      * @param mac
      * @param listener
      */
-    public  void setFinishSittingSyn(Context context, String mac, final BleFinishSittingListener listener){
+    public  void setHistorySittingSynResponse(Context context, String mac, final BleHistorySittingStatusSynListener listener){
         byte [] msg = HexStringUtils.hexString2Bytes("F103D3");
         ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
             @Override
@@ -277,6 +280,9 @@ public class BleRequest {
 
 
 
+
+
+
     /**
      * 首次连接同步数据完成
      * @param context
@@ -299,6 +305,30 @@ public class BleRequest {
             }
         });
     }
+
+
+    /**
+     * 首次连接同步记忆步数数据应答
+     * @param context
+     * @param mac
+     */
+    public  void setHistoryStepSynResponse(Context context, String mac, final BleHistoryStepSynListener listener){
+        byte [] msg = HexStringUtils.hexString2Bytes("F103D2");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送同步记忆步数成功 --  " + code);
+                    listener.onFinish(true);
+                }else {
+                    Log.d(TAG,"发送同步记忆步数失败 --  " + code);
+                    listener.onFinish(false);
+                }
+            }
+        });
+    }
+
+
 
 
 
@@ -353,7 +383,8 @@ public class BleRequest {
      * @param context
      * @param mac
      */
-    public void openDeafultNotify(Context context,String mac){
+    public void openDeafultNotify(Context context, String mac, BleDefaultNotifyListener listener){
+        BLE.setOnDefaultNotifyListener(listener);
         ClientManager.getClient(context).notify(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_NOTIFY_UUID, BLE.mNotifyRsp);
     }
 
@@ -377,7 +408,8 @@ public class BleRequest {
      * @param context
      * @param mac
      */
-    public void openOtherNotify(Context context,String mac){
+    public void openOtherNotify(Context context, String mac, BleOtherNotifyListener listener){
+        BLE.setOnOtherNotifyListener(listener);
         ClientManager.getClient(context).notify(mac, MyConstant.OTHER_SERVICE_UUID, MyConstant.OTHER_CHARACTERISTIC_NOTIFY_UUID, BLE.mOtherNotifyRsp);
     }
 

@@ -20,7 +20,6 @@ import com.inuker.bluetooth.library.connect.listener.BleConnectStatusListener;
 import com.inuker.bluetooth.library.connect.options.BleConnectOptions;
 import com.inuker.bluetooth.library.connect.response.BleConnectResponse;
 import com.inuker.bluetooth.library.model.BleGattProfile;
-import com.inuker.bluetooth.library.myble.BLE;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,7 +30,6 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cancan.bledemo.R;
-import cancan.bledemo.app.Constant;
 import no.nordicsemi.android.dfu.DfuProgressListener;
 import no.nordicsemi.android.dfu.DfuServiceInitiator;
 import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
@@ -145,7 +143,6 @@ public class DfuActivity extends AppCompatActivity {
                     btnGetZip.setEnabled(true);
                     btnStartDfu.setEnabled(true);
                     progressbar.setVisibility(View.GONE);
-                    mClient.notify(bleMac, Constant.SERVICE_UUID, Constant.CHARACTERISTIC_NOTIFY_UUID, BLE.mNotifyRsp);
                 }else {
                     btnGetZip.setEnabled(false);
                     btnStartDfu.setEnabled(false);
@@ -167,7 +164,6 @@ public class DfuActivity extends AppCompatActivity {
         super.onPause();
         DfuServiceListenerHelper.unregisterProgressListener(this, dfuProgressListener);//取消监听升级回调
         mClient.unregisterConnectStatusListener(bleMac, mConnectStatusListener);
-        mClient.unnotify(bleMac, Constant.SERVICE_UUID, Constant.CHARACTERISTIC_NOTIFY_UUID, BLE.mUnnotifyRsp);
     }
 
 

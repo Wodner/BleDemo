@@ -12,6 +12,7 @@ public interface BleSynDataListener {
     void startSynTime(boolean isStart);
     void sendFinishSyn();
 
-    void onSittingSyn(String result);
+    void onHistorySittingSyn(String result);
+    void onHistoryStepSyn(String result);
 
 }

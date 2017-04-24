@@ -6,7 +6,7 @@ package com.inuker.bluetooth.library.myble.callback;
  * 邮箱：wuwende@live.cn
  */
 
-public interface BleFinishSittingListener {
+public interface BleHistorySittingStatusSynListener {
 
 
     void onFinish(boolean isFinish);
