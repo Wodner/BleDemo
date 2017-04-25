@@ -1,12 +1,14 @@
 package cancan.bledemo.model;
 
+import java.io.Serializable;
+
 /**
  * 描述：
  * 作者：Wu on 2017/4/24 21:36
  * 邮箱：wuwende@live.cn
  */
 
-public class StepModel {
+public class  StepModel implements Serializable {
 
 
     /**

@@ -14,7 +14,7 @@ import cancan.bledemo.adapter.SittingDataAdapter;
 import cancan.bledemo.model.SittingDataModel;
 
 /**
- * 描述：
+ * 描述：历史坐姿显示页面
  * 作者：Wu on 2017/4/24 23:55
  * 邮箱：wuwende@live.cn
  */

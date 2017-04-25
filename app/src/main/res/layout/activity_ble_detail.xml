@@ -43,6 +43,12 @@
             android:layout_height="wrap_content"
             android:text="查看历史坐姿数据"/>
 
+        <Button
+            android:id="@+id/btn_history_step_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查看历史步数数据"/>
+
 
         <Button
             android:id="@+id/btn_get_battery"
@@ -94,6 +100,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="同步当前步数" />
+
+
+        <Button
+            android:id="@+id/btn_calibrate_sit_position"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="校准坐姿" />
+
 
 
     </LinearLayout>

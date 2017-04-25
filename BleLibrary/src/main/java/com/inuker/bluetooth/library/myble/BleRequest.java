@@ -7,6 +7,7 @@ import com.inuker.bluetooth.library.connect.options.BleConnectOptions;
 import com.inuker.bluetooth.library.connect.response.BleConnectResponse;
 import com.inuker.bluetooth.library.connect.response.BleWriteResponse;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
+import com.inuker.bluetooth.library.myble.callback.BleCalibrateSitPositionListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
 import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
@@ -43,6 +44,28 @@ public class BleRequest {
 
 
     /**
+     * 校准坐姿
+     * @param context
+     * @param mac
+     * @param listener
+     */
+    public void setCalibrateSitPosition(Context context, String mac, final BleCalibrateSitPositionListener listener){
+        BLE.setOnCalibrateSitPositionListener(listener);
+        byte [] msg = HexStringUtils.hexString2Bytes("F103DC");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送读取不是命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送读取不是命令失败 --  " + code);
+                    listener.onCalibrate(false);
+                }
+            }
+        });
+    }
+
+    /**
      * 读取当前步数
      * @param context
      * @param mac
@@ -61,11 +84,7 @@ public class BleRequest {
                 }
             }
         });
-
-
     }
-
-
 
     /**
      * 打开或者关闭震动  F5 是打开 F0是关闭  F5 加时间才有效 F0 没必要加时间 （最多120s）
@@ -110,8 +129,6 @@ public class BleRequest {
         }
     }
 
-
-
     /**
      * 取消激活
      * @param context
@@ -133,7 +150,6 @@ public class BleRequest {
         });
     }
 
-
     /**
      * 激活
      * @param context
@@ -154,9 +170,6 @@ public class BleRequest {
             }
         });
     }
-
-
-
 
     /**
      * 首次同步接收到每天历史坐姿 数据 都要应答给设备 表示已经收到数据
@@ -180,8 +193,6 @@ public class BleRequest {
         });
     }
 
-
-
     /**
      * 获取当前坐姿数据
      * @param context
@@ -202,7 +213,6 @@ public class BleRequest {
             }
         });
     }
-
 
     /**
      * 发送空中升级指令
@@ -226,9 +236,6 @@ public class BleRequest {
         });
     }
 
-
-
-
     /**
      * 读取马达震动标志
      *
@@ -236,7 +243,7 @@ public class BleRequest {
      * @param mac
      * @param listener
      */
-    public  void getMotorShockFlag(Context context, String mac, BleMotorFlagListener listener){
+    public  void getMotorShockFlag(Context context, String mac, final BleMotorFlagListener listener){
         BLE.setOnMotorListener(listener);
         byte [] msg = HexStringUtils.hexString2Bytes("F103DB");
         ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
@@ -246,13 +253,11 @@ public class BleRequest {
                     Log.d(TAG,"发送成功 --  " + code);
                 }else {
                     Log.d(TAG,"发送失败 --  " + code);
+                    listener.onMotor(false,"NAN",0);
                 }
             }
         });
     }
-
-
-
 
     /**
      * 读取电量
@@ -260,7 +265,7 @@ public class BleRequest {
      * @param mac
      * @param listener
      */
-    public  void getBattery(Context context, String mac, BleBateryListener listener){
+    public  void getBattery(Context context, String mac, final BleBateryListener listener){
         BLE.setOnBateryListener(listener);
         byte [] msg = HexStringUtils.hexString2Bytes("F103D5");
         ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
@@ -270,18 +275,12 @@ public class BleRequest {
                     Log.d(TAG,"发送成功 --  " + code);
                 }else {
                     Log.d(TAG,"发送失败 --  " + code);
+                    listener.onBattery(false,-1);
                 }
             }
         });
 
     }
-
-
-
-
-
-
-
 
     /**
      * 首次连接同步数据完成
@@ -306,7 +305,6 @@ public class BleRequest {
         });
     }
 
-
     /**
      * 首次连接同步记忆步数数据应答
      * @param context
@@ -327,10 +325,6 @@ public class BleRequest {
             }
         });
     }
-
-
-
-
 
     /**
      * 首次同步要发送时间下去同步
@@ -377,7 +371,6 @@ public class BleRequest {
         return ret;
     }
 
-
     /**
      * 打开默认的通知
      * @param context
@@ -396,12 +389,6 @@ public class BleRequest {
     public void closeDeafultNotify(Context context,String mac){
         ClientManager.getClient(context).unnotify(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_NOTIFY_UUID, BLE.mUnnotifyRsp);
     }
-
-
-
-
-
-
 
     /**
      * 打开另一个服务的通知
@@ -422,9 +409,6 @@ public class BleRequest {
         ClientManager.getClient(context).unnotify(mac, MyConstant.OTHER_SERVICE_UUID, MyConstant.OTHER_CHARACTERISTIC_NOTIFY_UUID, BLE.mOtherUnnotifyRsp);
     }
 
-
-
-
     /**
      * 连接蓝牙
      * @param context
@@ -440,7 +424,6 @@ public class BleRequest {
                 .build();
         ClientManager.getClient(context).connect(mac, options,response);
     }
-
 
     /**
      * 断开连接

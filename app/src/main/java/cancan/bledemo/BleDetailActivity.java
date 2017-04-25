@@ -24,6 +24,7 @@ import com.inuker.bluetooth.library.myble.BLE;
 import com.inuker.bluetooth.library.myble.BleRequest;
 import com.inuker.bluetooth.library.myble.ClientManager;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
+import com.inuker.bluetooth.library.myble.callback.BleCalibrateSitPositionListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
 import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
@@ -65,23 +66,12 @@ public class BleDetailActivity extends AppCompatActivity {
     TextView tvConnectStatus;
     @Bind(R.id.rl_connect_status)
     RelativeLayout rlConnectStatus;
-
-
-//    @Bind(R.id.current_sit_recyclerview)
-//    RecyclerView correntSitRecyclerView;
-
-
-
     @Bind(R.id.btn_get_battery)
     Button btnGetBattery;
     @Bind(R.id.btn_get_motor)
     Button btnGetMonitor;
-
-
     @Bind(R.id.btn_get_current_step_status)
     Button btnGetCurrentStep;
-
-
     @Bind(R.id.tv_first_response)
     TextView tvFiestResponse;
 
@@ -95,7 +85,7 @@ public class BleDetailActivity extends AppCompatActivity {
     private BleRequest mBleRequest;
 
     private List<SittingDataModel> sittingDataModelList = new ArrayList<SittingDataModel>();
-
+    private List<StepModel> stepDataModelList = new ArrayList<StepModel>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -151,12 +141,14 @@ public class BleDetailActivity extends AppCompatActivity {
 
             @Override
             public void onHistoryStepSyn(String result) {
-
+                Log.d(TAG, "历史步数返回信息... " + result);
+                StepModel stepModel = JsonParser.parseWithGson(StepModel.class,result);
+                stepDataModelList.add(stepModel);
             }
 
             @Override
             public void onHistorySittingSyn(String result) {
-                Log.d(TAG, "坐姿返回信息... " + result);
+                Log.d(TAG, "历史坐姿返回信息... " + result);
                 SittingDataModel sittingDataModel =  JsonParser.parseWithGson(SittingDataModel.class,result);
                 sittingDataModelList.add(sittingDataModel);
             }
@@ -220,6 +212,7 @@ public class BleDetailActivity extends AppCompatActivity {
             isConnected = (status == STATUS_CONNECTED);
             if(!isConnected){
                 sittingDataModelList.clear();
+                stepDataModelList.clear();
             }
             connectDeviceIfNeeded();
         }
@@ -253,12 +246,23 @@ public class BleDetailActivity extends AppCompatActivity {
 
 
 
-    @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_sit_status,
-            R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status})
+    @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_sit_status,R.id.btn_calibrate_sit_position,
+            R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status,R.id.btn_history_step_status})
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btn_calibrate_sit_position:
+                mBleRequest.setCalibrateSitPosition(mContext, bleMac, new BleCalibrateSitPositionListener() {
+                    @Override
+                    public void onCalibrate(boolean isCalibrate) {
+                        if (isCalibrate){
+                            Toast.makeText(mContext,"校准成功",Toast.LENGTH_SHORT).show();
+                        }else {
+                            Toast.makeText(mContext,"发送指令失败",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
-
+                break;
             case R.id.btn_history_sit_status:
                 if(sittingDataModelList.size()>0){
                     Intent intent = new Intent();
@@ -270,10 +274,22 @@ public class BleDetailActivity extends AppCompatActivity {
                     Toast.makeText(mContext,"没有历史坐姿数据",Toast.LENGTH_SHORT).show();
                 }
                 break;
+
+            case R.id.btn_history_step_status:
+                if(stepDataModelList.size()>0){
+                    Intent intent = new Intent();
+                    intent.setClass(BleDetailActivity.this, BleHistoryStepActivity.class);
+                    intent.putExtra("title","历史步数数据");
+                    intent.putExtra("history_step", (Serializable) stepDataModelList);
+                    startActivity(intent);
+                }else {
+                    Toast.makeText(mContext,"没有历史步数数据",Toast.LENGTH_SHORT).show();
+                }
+                break;
             case R.id.btn_get_battery:
                 mBleRequest.getBattery(mContext, bleMac, new BleBateryListener() {
                     @Override
-                    public void onBattery(int level) {
+                    public void onBattery(boolean isSuccess,int level) {
                         btnGetBattery.setText("获取电池电量：  " + level + "%");
                     }
                 });
@@ -281,7 +297,7 @@ public class BleDetailActivity extends AppCompatActivity {
             case R.id.btn_get_motor:
                 mBleRequest.getMotorShockFlag(mContext, bleMac, new BleMotorFlagListener() {
                     @Override
-                    public void onMotor(String motorFlag,int second) {
+                    public void onMotor(boolean isSuccess,String motorFlag,int second) {
                         btnGetMonitor.setText("读取马达震动标志位：" + motorFlag + "  时间：" + second + "s");
                     }
                 });

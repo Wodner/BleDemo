@@ -7,5 +7,5 @@ package com.inuker.bluetooth.library.myble.callback;
  */
 
 public interface BleMotorFlagListener {
-    void onMotor(String motorFlag,int second);
+    void onMotor(boolean isSuccess,String motorFlag,int second);
 }

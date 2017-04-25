@@ -6,6 +6,7 @@ import android.util.Log;
 import com.inuker.bluetooth.library.connect.response.BleNotifyResponse;
 import com.inuker.bluetooth.library.connect.response.BleUnnotifyResponse;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
+import com.inuker.bluetooth.library.myble.callback.BleCalibrateSitPositionListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
 import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
@@ -44,23 +45,24 @@ public class BLE {
     private static BleCurrentStatusListener bleCurrentStatusListener;
     private static BleEnableDeviceListener bleEnableDeviceListener;
     private static BleDisableDeviceListener bleDisableDeviceListener;
-
     private static BleSetMotorShockListener bleSetMotorShockListener;
     private static BleCurrentStepListener bleCurrentStepListener;
-
     private static BleUserStatusAndSittingStatusListener bleUserStatusAndSittingStatusListener;
-
     private static BleDefaultNotifyListener bleDefaultNotifyListener;
-
     private static BleOtherNotifyListener bleOtherNotifyListener;
+    private static BleCalibrateSitPositionListener bleCalibrateSitPositionListener;
 
     private static Context mContext;
     private static String mMac;
 
+    public static void setOnCalibrateSitPositionListener(BleCalibrateSitPositionListener listener){
+        bleCalibrateSitPositionListener = listener;
+    }
 
     public static void setOnOtherNotifyListener(BleOtherNotifyListener listener){
         bleOtherNotifyListener = listener;
     }
+
     public static void setOnDefaultNotifyListener(BleDefaultNotifyListener listener){
         bleDefaultNotifyListener = listener;
     }
@@ -74,6 +76,7 @@ public class BLE {
     public static void setOnBateryListener(BleBateryListener listener){
         bleBateryListener = listener;
     }
+
     public static void setOnMotorListener(BleMotorFlagListener listener){
         bleMotorListener = listener;
     }
@@ -85,10 +88,10 @@ public class BLE {
     public static void setOnEnableDeviceListener(BleEnableDeviceListener listener){
         bleEnableDeviceListener = listener;
     }
+
     public static void setOnDisableDeviceListener(BleDisableDeviceListener listener){
         bleDisableDeviceListener = listener;
     }
-
 
     public static void setOnMotorShockListener(BleSetMotorShockListener listener){
         bleSetMotorShockListener = listener;
@@ -149,8 +152,8 @@ public class BLE {
                     }
                 }
 
-
                 else if(msgHead.equals("FE") && msgID.equals("E2")){//同步记忆计步数据
+//                    Log.e(TAG, "同步历史步数... " + Arrays.toString(value));
                     byte[] year_h = new byte[1] ;
                     System.arraycopy(value,3,year_h,0,year_h.length);
                     byte[] year_l = new byte[1] ;
@@ -202,16 +205,13 @@ public class BLE {
                                 Log.d(TAG, "同步历史步数完成标志... " + isFinish);
                             }
                         });
-
                     }
                 }
-
 
                 else if(msgHead.equals("FE") && msgID.equals("E3")){//同步历史坐姿数据
                     byte[] currentIndex = new byte[1] ;
                     System.arraycopy(value,3,currentIndex,0,currentIndex.length);
                     int index = BitOperator.byteToInteger(currentIndex);
-
                     if(index==0){
                         byte[] month = new byte[1] ;
                         System.arraycopy(value,4,month,0,month.length);
@@ -277,8 +277,6 @@ public class BLE {
                     }
                 }
 
-
-
                 else if(msgHead.equals("FE") && msgID.equals("E4")){//数据交换完成
                     if(bleSynListener!=null){
                         new BleRequest().finishSyn(mContext, mMac, new BleRequest.SynFinishListener() {
@@ -289,21 +287,15 @@ public class BLE {
                         });
                         bleSynListener.sendFinishSyn();
                     }
-
-
-
-
-
                 }
 
                 else if(msgHead.equals("FE") && msgID.equals("E5")){//读取电量返回
                     byte[] battery = new byte[1] ;
                     System.arraycopy(value,3,battery,0,battery.length);
                     if (bleBateryListener!=null){
-                        bleBateryListener.onBattery(BitOperator.byteToInteger(battery));
+                        bleBateryListener.onBattery(true,BitOperator.byteToInteger(battery));
                     }
                 }
-
 
                 else if (msgHead.equals("FE") && msgID.equals("EB")){//读取马达震动标志位
                     byte[] motorFlag = new byte[1] ;
@@ -312,9 +304,8 @@ public class BLE {
                     byte[] second = new byte[1] ;
                     System.arraycopy(value,4,second,0,second.length);
                     if(bleMotorListener!=null)
-                         bleMotorListener.onMotor(ByteUtils.byteToString(motorFlag),BitOperator.byteToInteger(second));
+                         bleMotorListener.onMotor(true,ByteUtils.byteToString(motorFlag),BitOperator.byteToInteger(second));
                 }
-
 
                 else if(msgHead.equals("FE") && msgID.equals("E9")){//同步当前坐姿数据返回信息
                     byte[] currentIndex = new byte[1] ;
@@ -377,8 +368,6 @@ public class BLE {
                     }
                 }
 
-
-
                 else if(msgHead.equals("FE") && msgID.equals("E6")){//设备激活成功返回
                     if(bleEnableDeviceListener!=null)
                         bleEnableDeviceListener.onEnable(true);
@@ -395,8 +384,6 @@ public class BLE {
                 }
 
                 else if(msgHead.equals("FE") && msgID.equals("E8")){//连接状态下同步计步数据
-//                    [-2, 13, -24, 20, 17, 4, 24, 20, 30, 14, 14, 0, 0]
-
                     byte[] year_h = new byte[1] ;
                     System.arraycopy(value,3,year_h,0,year_h.length);
                     byte[] year_l = new byte[1] ;
@@ -443,6 +430,15 @@ public class BLE {
                     if (bleCurrentStepListener!=null)
                         bleCurrentStepListener.onStep(jsonresult);
                 }
+
+                else if(msgHead.equals("FE") && msgID.equals("EC")){
+                    if (bleCalibrateSitPositionListener!=null){
+                        bleCalibrateSitPositionListener.onCalibrate(true);
+                    }
+                }
+
+
+
             }
         }
 

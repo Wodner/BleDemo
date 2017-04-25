@@ -8,5 +8,5 @@ package com.inuker.bluetooth.library.myble.callback;
 
 public interface BleBateryListener {
 
-    void onBattery(int level);
+    void onBattery(boolean isSuccess,int level);
 }
