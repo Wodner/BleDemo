@@ -9,7 +9,7 @@ import java.util.List;
  * 邮箱：wuwende@live.cn
  */
 
-public class SittingDataModel implements Serializable {
+public class UserStatusDataModel implements Serializable {
 
 
     /**

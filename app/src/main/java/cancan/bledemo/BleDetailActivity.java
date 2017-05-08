@@ -23,16 +23,23 @@ import com.inuker.bluetooth.library.model.BleGattProfile;
 import com.inuker.bluetooth.library.myble.BLE;
 import com.inuker.bluetooth.library.myble.BleRequest;
 import com.inuker.bluetooth.library.myble.ClientManager;
+import com.inuker.bluetooth.library.myble.callback.BleBackwardAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
 import com.inuker.bluetooth.library.myble.callback.BleCalibrateSitPositionListener;
-import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
+import com.inuker.bluetooth.library.myble.callback.BleClearCalibrateSitPositionListener;
+import com.inuker.bluetooth.library.myble.callback.BleClearDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
+import com.inuker.bluetooth.library.myble.callback.BleCurrentUserStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleDfuModelListener;
 import com.inuker.bluetooth.library.myble.callback.BleDisableDeviceListener;
 import com.inuker.bluetooth.library.myble.callback.BleEnableDeviceListener;
+import com.inuker.bluetooth.library.myble.callback.BleForwardAngleListener;
+import com.inuker.bluetooth.library.myble.callback.BleLeftAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
 import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
+import com.inuker.bluetooth.library.myble.callback.BleRebootListener;
+import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
@@ -45,8 +52,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cancan.bledemo.model.FirmwareModel;
-import cancan.bledemo.model.SittingDataModel;
+import cancan.bledemo.model.SittingStatusDataModel;
 import cancan.bledemo.model.StepModel;
+import cancan.bledemo.model.UserStatusDataModel;
 import cancan.bledemo.utils.JsonParser;
 
 import static com.inuker.bluetooth.library.Code.REQUEST_SUCCESS;
@@ -84,8 +92,10 @@ public class BleDetailActivity extends AppCompatActivity {
     private Context mContext;
     private BleRequest mBleRequest;
 
-    private List<SittingDataModel> sittingDataModelList = new ArrayList<SittingDataModel>();
+    private List<UserStatusDataModel> userStatusDataModelList = new ArrayList<>();
     private List<StepModel> stepDataModelList = new ArrayList<StepModel>();
+
+    private List<SittingStatusDataModel> sittingStatusDataModelsList = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -125,7 +135,6 @@ public class BleDetailActivity extends AppCompatActivity {
                 Log.d(TAG, "返回信息... " + result);
                 FirmwareModel firmwareModel = JsonParser.parseWithGson(FirmwareModel.class,result);
                 tvFiestResponse.setText("(电量："+ firmwareModel.getBatery() +") (马达标志：" + firmwareModel.getMonitorflag() + ") (固件版本号："+ firmwareModel.getFirmwareversion()+")");
-
             }
 
             @Override
@@ -147,10 +156,17 @@ public class BleDetailActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onHistorySittingSyn(String result) {
+            public void onHistoryUserStatusSyn(String result) {
+                Log.d(TAG, "历史用户状态返回信息... " + result);
+                UserStatusDataModel sittingDataModel =  JsonParser.parseWithGson(UserStatusDataModel.class,result);
+                userStatusDataModelList.add(sittingDataModel);
+            }
+
+            @Override
+            public void onHistorySittingStatusSyn(String result) {
                 Log.d(TAG, "历史坐姿返回信息... " + result);
-                SittingDataModel sittingDataModel =  JsonParser.parseWithGson(SittingDataModel.class,result);
-                sittingDataModelList.add(sittingDataModel);
+                SittingStatusDataModel sittingStatusDataModel = JsonParser.parseWithGson(SittingStatusDataModel.class,result);
+                sittingStatusDataModelsList.add(sittingStatusDataModel);
             }
         });
     }
@@ -211,8 +227,9 @@ public class BleDetailActivity extends AppCompatActivity {
         public void onConnectStatusChanged(String mac, int status) {
             isConnected = (status == STATUS_CONNECTED);
             if(!isConnected){
-                sittingDataModelList.clear();
+                userStatusDataModelList.clear();
                 stepDataModelList.clear();
+                sittingStatusDataModelsList.clear();
             }
             connectDeviceIfNeeded();
         }
@@ -246,10 +263,35 @@ public class BleDetailActivity extends AppCompatActivity {
 
 
 
-    @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_sit_status,R.id.btn_calibrate_sit_position,
-            R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status,R.id.btn_history_step_status})
+    @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_user_status,R.id.btn_calibrate_sit_position,R.id.btn_reboot_ble,
+            R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status,R.id.btn_history_step_status,R.id.btn_clear_data,R.id.btn_history_sitting_status,
+            R.id.btn_clear_calibrate_sit_position,R.id.btn_set_forward_angle,R.id.btn_set_backward_angle,R.id.btn_set_left_angle,R.id.btn_set_right_angle})
     public void onClick(View view) {
         switch (view.getId()) {
+//            case R.id.btn_set_right_angle:
+//                setAngle(3);
+//                break;
+//            case R.id.btn_set_left_angle:
+//                setAngle(2);
+//                break;
+//            case R.id.btn_set_backward_angle:
+//                setAngle(1);
+//                break;
+//            case R.id.btn_set_forward_angle:
+//                setAngle(0);
+//                break;
+            case R.id.btn_clear_calibrate_sit_position:
+                mBleRequest.setClearCalibrateSitPostion(mContext, bleMac, new BleClearCalibrateSitPositionListener() {
+                    @Override
+                    public void onClearCalibrate(boolean isSuccess) {
+                        if (isSuccess){
+                            Toast.makeText(mContext,"坐姿校准清除",Toast.LENGTH_SHORT).show();
+                        }else {
+                            Toast.makeText(mContext,"发送指令失败",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                break;
             case R.id.btn_calibrate_sit_position:
                 mBleRequest.setCalibrateSitPosition(mContext, bleMac, new BleCalibrateSitPositionListener() {
                     @Override
@@ -264,14 +306,14 @@ public class BleDetailActivity extends AppCompatActivity {
 
                 break;
             case R.id.btn_history_sit_status:
-                if(sittingDataModelList.size()>0){
+                if(userStatusDataModelList.size()>0){
                     Intent intent = new Intent();
-                    intent.setClass(BleDetailActivity.this, BleHistorySitStatusActivity.class);
-                    intent.putExtra("title","历史坐姿数据");
-                    intent.putExtra("history_sit", (Serializable) sittingDataModelList);
+                    intent.setClass(BleDetailActivity.this, BleHistoryUserStatusActivity.class);
+                    intent.putExtra("title","历史用户状态数据");
+                    intent.putExtra("history_user", (Serializable) userStatusDataModelList);
                     startActivity(intent);
                 }else {
-                    Toast.makeText(mContext,"没有历史坐姿数据",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext,"没有历史用户状态数据",Toast.LENGTH_SHORT).show();
                 }
                 break;
 
@@ -286,6 +328,19 @@ public class BleDetailActivity extends AppCompatActivity {
                     Toast.makeText(mContext,"没有历史步数数据",Toast.LENGTH_SHORT).show();
                 }
                 break;
+
+            case R.id.btn_history_sitting_status:
+                if(sittingStatusDataModelsList.size()>0){
+                    Intent intent = new Intent();
+                    intent.setClass(BleDetailActivity.this, BleHistorySitStatusActivity.class);
+                    intent.putExtra("title","历史坐姿数据");
+                    intent.putExtra("history_sit", (Serializable) sittingStatusDataModelsList);
+                    startActivity(intent);
+                }else{
+                    Toast.makeText(mContext,"没有历史坐姿数据",Toast.LENGTH_SHORT).show();
+                }
+                break;
+
             case R.id.btn_get_battery:
                 mBleRequest.getBattery(mContext, bleMac, new BleBateryListener() {
                     @Override
@@ -337,27 +392,27 @@ public class BleDetailActivity extends AppCompatActivity {
                         if (isDfu){
                             finish();
                         }else {
-                            Toast.makeText(mContext,"发送升级指令不成功，请重新发送。",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext,"发送升级指令失败，请重新发送。",Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
                 break;
-            case R.id.btn_get_current_sit_status:
-                mBleRequest.getCurrentSttingStatus(mContext, bleMac, new BleCurrentStatusListener() {
+            case R.id.btn_get_current_user_status:
+                mBleRequest.getCurrentUserStatus(mContext, bleMac, new BleCurrentUserStatusListener() {
                     @Override
                     public void onCurrentStatus(String result) {
                         Log.d(TAG, " 返回信息 -------- >  " + result);
-                        List<SittingDataModel> sittingDataModelList = new ArrayList<SittingDataModel>();
-                        SittingDataModel sittingDataModel =  JsonParser.parseWithGson(SittingDataModel.class,result);
+                        List<UserStatusDataModel> sittingDataModelList = new ArrayList<UserStatusDataModel>();
+                        UserStatusDataModel sittingDataModel =  JsonParser.parseWithGson(UserStatusDataModel.class,result);
                         sittingDataModelList.add(sittingDataModel);
                         if(sittingDataModelList.size()>0){
                             Intent intent = new Intent();
-                            intent.setClass(BleDetailActivity.this, BleHistorySitStatusActivity.class);
-                            intent.putExtra("history_sit", (Serializable) sittingDataModelList);
-                            intent.putExtra("title","当前坐姿数据");
+                            intent.setClass(BleDetailActivity.this, BleHistoryUserStatusActivity.class);
+                            intent.putExtra("history_user", (Serializable) sittingDataModelList);
+                            intent.putExtra("title","当前用户状态数据");
                             startActivity(intent);
                         }else {
-                            Toast.makeText(mContext,"没有坐姿数据",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext,"没有用户状态数据",Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -374,6 +429,33 @@ public class BleDetailActivity extends AppCompatActivity {
                     }
                 });
                 break;
+
+            case R.id.btn_reboot_ble:
+                mBleRequest.setBleReboot(mContext, bleMac, new BleRebootListener() {
+                    @Override
+                    public void onReboot(boolean isSuccess) {
+                        if (isSuccess){
+                            finish();//发送重启命令成功之后，需要重新扫描BLE设备连接
+                            Toast.makeText(mContext,"发送重启命令成功",Toast.LENGTH_SHORT).show();
+                        }else {
+                            Toast.makeText(mContext,"发送重启命令失败",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                break;
+            case R.id.btn_clear_data:
+                mBleRequest.setClearBleData(mContext, bleMac, new BleClearDataListener() {
+                    @Override
+                    public void onClearData(boolean isSuccess) {
+                        if (isSuccess){
+                            Toast.makeText(mContext,"发送清除数据命令成功",Toast.LENGTH_SHORT).show();
+                        }else {
+                            Toast.makeText(mContext,"发送清除数据命令失败",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                break;
+
         }
     }
 
@@ -412,6 +494,103 @@ public class BleDetailActivity extends AppCompatActivity {
                 .setNegativeButton("取消" ,  null )
                 .show();
     }
+
+
+    /**
+     * @param model 0: 前倾  1：后倾 2:左倾 3：右倾
+     */
+    private void setAngle(final int model){
+        String title =null;
+        if(model ==0){
+            title = "设置前倾角度";
+        }else if(model ==1){
+            title = "设置后倾角度";
+        }else if(model ==2){
+            title = "设置左倾角度";
+        }else if(model ==3){
+            title = "设置右倾角度";
+        }
+
+        final EditText editAngle = new EditText(mContext);
+        editAngle.setHint("角度范围：0 ~ 90 度");
+        new  AlertDialog.Builder(mContext)
+                .setTitle(title)
+                .setView(editAngle)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if(!TextUtils.isEmpty(editAngle.getText().toString())){
+                            int angle = Integer.valueOf(editAngle.getText().toString());
+                            if(angle<=90 && angle>=0){
+                                Log.d(TAG, " 设置 -------- >  " + model);
+                                switch (model){
+
+                                    case 0:
+                                        Log.d(TAG, " 设置前倾角度 -------- >  " );
+                                        mBleRequest.setForwardAngle(mContext, bleMac, angle, new BleForwardAngleListener() {
+                                            @Override
+                                            public void onForwardAngle(boolean isSuccess) {
+                                                if (isSuccess){
+                                                    Toast.makeText(mContext,"设置前倾角度成功",Toast.LENGTH_SHORT).show();
+                                                }else {
+                                                    Toast.makeText(mContext,"发送指令失败",Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                                        break;
+                                    case 1:
+                                        Log.d(TAG, " 设置后倾角度 -------- >  " );
+                                        mBleRequest.setBackwardAngle(mContext, bleMac, angle, new BleBackwardAngleListener() {
+                                            @Override
+                                            public void onBackwardAngle(boolean isSuccess) {
+                                                if (isSuccess){
+                                                    Toast.makeText(mContext,"设置后倾角度成功",Toast.LENGTH_SHORT).show();
+                                                }else {
+                                                    Toast.makeText(mContext,"发送指令失败",Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                                        break;
+                                    case 2:
+                                        Log.d(TAG, " 设置左倾角度 -------- >  " );
+                                        mBleRequest.setLeftAngle(mContext, bleMac, angle, new BleLeftAngleListener() {
+                                            @Override
+                                            public void onLeftAngle(boolean isSuccess) {
+                                                if (isSuccess){
+                                                    Toast.makeText(mContext,"设置左倾角度成功",Toast.LENGTH_SHORT).show();
+                                                }else {
+                                                    Toast.makeText(mContext,"发送指令失败",Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                                        break;
+                                    case 3:
+                                        Log.d(TAG, " 设置右倾角度 -------- >  " );
+                                        mBleRequest.setRightAngle(mContext, bleMac, angle, new BleRightAngleListener() {
+                                            @Override
+                                            public void onRightAngle(boolean isSuccess) {
+                                                if (isSuccess){
+                                                    Toast.makeText(mContext,"设置右倾角度成功",Toast.LENGTH_SHORT).show();
+                                                }else {
+                                                    Toast.makeText(mContext,"发送指令失败",Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                                        break;
+                                }
+                            }else {
+                                Toast.makeText(mContext,"输入角度不合法",Toast.LENGTH_SHORT).show();
+                            }
+                        }else {
+                            Toast.makeText(mContext,"输入时间不能为空",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                })
+                .setNegativeButton("取消" ,  null )
+                .show();
+    }
+
 
 
 }

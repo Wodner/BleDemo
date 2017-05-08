@@ -6,18 +6,26 @@ import android.util.Log;
 import com.inuker.bluetooth.library.connect.options.BleConnectOptions;
 import com.inuker.bluetooth.library.connect.response.BleConnectResponse;
 import com.inuker.bluetooth.library.connect.response.BleWriteResponse;
+import com.inuker.bluetooth.library.myble.callback.BleBackwardAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
 import com.inuker.bluetooth.library.myble.callback.BleCalibrateSitPositionListener;
-import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
+import com.inuker.bluetooth.library.myble.callback.BleClearCalibrateSitPositionListener;
+import com.inuker.bluetooth.library.myble.callback.BleClearDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
+import com.inuker.bluetooth.library.myble.callback.BleCurrentUserStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleDfuModelListener;
 import com.inuker.bluetooth.library.myble.callback.BleDisableDeviceListener;
 import com.inuker.bluetooth.library.myble.callback.BleEnableDeviceListener;
-import com.inuker.bluetooth.library.myble.callback.BleHistorySittingStatusSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleForwardAngleListener;
+import com.inuker.bluetooth.library.myble.callback.BleHistorySitStatusSynListener;
 import com.inuker.bluetooth.library.myble.callback.BleHistoryStepSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleHistoryUserStatusSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleLeftAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
 import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
+import com.inuker.bluetooth.library.myble.callback.BleRebootListener;
+import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.myutils.BitOperator;
 import com.inuker.bluetooth.library.myble.myutils.HexStringUtils;
@@ -44,6 +52,195 @@ public class BleRequest {
 
 
     /**
+     * 清除BLE数据
+     * @param context
+     * @param mac
+     * @param listener
+     */
+    public void setClearBleData(Context context, String mac,final BleClearDataListener listener){
+        BLE.setOnBleClearDataListener(listener);
+        byte [] msg = HexStringUtils.hexString2Bytes("F10395");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送清除数据命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送清除数据命令失败 --  " + code);
+                    listener.onClearData(false);
+                }
+            }
+        });
+
+    }
+
+
+
+
+    /**
+     * 设置后倾角度
+     * @param context
+     * @param mac
+     * @param angle  角度 0 ~ 90
+     * @param listener
+     */
+    public void setRightAngle(Context context, String mac, int angle,final BleRightAngleListener listener){
+        BLE.setOnBleRightAngleListener(listener);
+        String hexAngle = Integer.toHexString(angle);
+        if ((hexAngle.length() & 0x01) != 0) {//奇数
+            hexAngle = "0"+ hexAngle;
+        }
+        byte [] msg = HexStringUtils.hexString2Bytes("F10493"+ hexAngle);
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送设置后倾角度命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送设置后倾角度命令失败 --  " + code);
+                    listener.onRightAngle(false);
+                }
+            }
+        });
+    }
+
+    /**
+     * 设置后倾角度
+     * @param context
+     * @param mac
+     * @param angle  角度 0 ~ 90
+     * @param listener
+     */
+    public void setLeftAngle(Context context, String mac, int angle,final BleLeftAngleListener listener){
+        BLE.setOnBleLeftAngleListener(listener);
+        String hexAngle = Integer.toHexString(angle);
+        if ((hexAngle.length() & 0x01) != 0) {//奇数
+            hexAngle = "0"+ hexAngle;
+        }
+        byte [] msg = HexStringUtils.hexString2Bytes("F10492"+ hexAngle);
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送设置后倾角度命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送设置后倾角度命令失败 --  " + code);
+                    listener.onLeftAngle(false);
+                }
+            }
+        });
+    }
+
+
+    /**
+     * 设置后倾角度
+     * @param context
+     * @param mac
+     * @param angle  角度 0 ~ 90
+     * @param listener
+     */
+    public void setBackwardAngle(Context context, String mac, int angle,final BleBackwardAngleListener listener){
+        BLE.setOnBleBackwardAngleListener(listener);
+        String hexAngle = Integer.toHexString(angle);
+        if ((hexAngle.length() & 0x01) != 0) {//奇数
+            hexAngle = "0"+ hexAngle;
+        }
+        byte [] msg = HexStringUtils.hexString2Bytes("F10491"+ hexAngle);
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送设置后倾角度命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送设置后倾角度命令失败 --  " + code);
+                    listener.onBackwardAngle(false);
+                }
+            }
+        });
+    }
+
+
+    /**
+     * 设置前倾角度
+     * @param context
+     * @param mac
+     * @param angle  角度 0 ~ 90
+     * @param listener
+     */
+    public void setForwardAngle(Context context, String mac, int angle,final BleForwardAngleListener listener){
+        BLE.setOnBleForwardAngleListener(listener);
+        String hexAngle = Integer.toHexString(angle);
+        if ((hexAngle.length() & 0x01) != 0) {//奇数
+            hexAngle = "0"+ hexAngle;
+        }
+        byte [] msg = HexStringUtils.hexString2Bytes("F10490"+ hexAngle);
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送设置前倾角度命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送设置前倾角度命令失败 --  " + code);
+                    listener.onForwardAngle(false);
+                }
+            }
+        });
+    }
+
+
+
+
+    /**
+     * 坐姿校准清除
+     * @param context
+     * @param mac
+     * @param listener
+     */
+    public void setClearCalibrateSitPostion(Context context, String mac, final BleClearCalibrateSitPositionListener listener){
+        BLE.setOnClearCalibrateSitPositionListener(listener);
+        byte [] msg = HexStringUtils.hexString2Bytes("F103DD");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送坐姿校准清除命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送坐姿校准清除命令失败 --  " + code);
+                    listener.onClearCalibrate(false);
+                }
+            }
+        });
+    }
+
+
+
+    /**
+     * 重启ble
+     * @param context
+     * @param mac
+     * @param listener
+     */
+    public void setBleReboot(Context context, String mac, final BleRebootListener listener){
+        byte [] msg = HexStringUtils.hexString2Bytes("F103B2");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送重启ble命令成功 --  " + code);
+                    listener.onReboot(true);
+                }else {
+                    Log.d(TAG,"发送重启ble命令失败 --  " + code);
+                    listener.onReboot(false);
+                }
+            }
+        });
+
+
+    }
+
+
+
+    /**
      * 校准坐姿
      * @param context
      * @param mac
@@ -56,9 +253,9 @@ public class BleRequest {
             @Override
             public void onResponse(int code) {
                 if (code==0){
-                    Log.d(TAG,"发送读取不是命令成功 --  " + code);
+                    Log.d(TAG,"发送校准坐姿命令成功 --  " + code);
                 }else {
-                    Log.d(TAG,"发送读取不是命令失败 --  " + code);
+                    Log.d(TAG,"发送校准坐姿命令失败 --  " + code);
                     listener.onCalibrate(false);
                 }
             }
@@ -78,9 +275,9 @@ public class BleRequest {
             @Override
             public void onResponse(int code) {
                 if (code==0){
-                    Log.d(TAG,"发送读取不是命令成功 --  " + code);
+                    Log.d(TAG,"发送读取当前步数命令成功 --  " + code);
                 }else {
-                    Log.d(TAG,"发送读取不是命令失败 --  " + code);
+                    Log.d(TAG,"发送读取当前步数命令失败 --  " + code);
                 }
             }
         });
@@ -100,7 +297,6 @@ public class BleRequest {
             String hexTime = Integer.toHexString(time);
             if ((hexTime.length() & 0x01) != 0) {//奇数
                 hexTime = "0"+ hexTime;
-
             }
             Log.d(TAG,time + "  发送取消激活命令成功 --  " + hexTime);
             byte [] msg = HexStringUtils.hexString2Bytes("F105DAF5"+ hexTime);
@@ -171,22 +367,48 @@ public class BleRequest {
         });
     }
 
+
     /**
      * 首次同步接收到每天历史坐姿 数据 都要应答给设备 表示已经收到数据
      * @param context
      * @param mac
      * @param listener
      */
-    public  void setHistorySittingSynResponse(Context context, String mac, final BleHistorySittingStatusSynListener listener){
-        byte [] msg = HexStringUtils.hexString2Bytes("F103D3");
+    public  void setHistorySittingSynResponse(Context context, String mac, final BleHistorySitStatusSynListener listener){
+        byte [] msg = HexStringUtils.hexString2Bytes("F103A4");
         ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
             @Override
             public void onResponse(int code) {
                 if (code==0){
                     Log.d(TAG,"发送完成同步历史坐姿成功 --  " + code);
-                    listener.onFinish(true);
+                    listener.onReceive(true);
                 }else {
                     Log.d(TAG,"发送完成同步历史坐姿失败 --  " + code);
+                    listener.onReceive(false);
+                }
+            }
+        });
+    }
+
+
+
+
+    /**
+     * 首次同步接收到每天用户状态 数据 都要应答给设备 表示已经收到数据
+     * @param context
+     * @param mac
+     * @param listener
+     */
+    public  void setHistoryUserSynResponse(Context context, String mac, final BleHistoryUserStatusSynListener listener){
+        byte [] msg = HexStringUtils.hexString2Bytes("F103D3");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送完成同步历史用户状态成功 --  " + code);
+                    listener.onFinish(true);
+                }else {
+                    Log.d(TAG,"发送完成同步历史用户状态失败 --  " + code);
                     listener.onFinish(false);
                 }
             }
@@ -199,7 +421,7 @@ public class BleRequest {
      * @param mac
      * @param listener
      */
-    public  void getCurrentSttingStatus(Context context, String mac, BleCurrentStatusListener listener){
+    public  void getCurrentUserStatus(Context context, String mac, BleCurrentUserStatusListener listener){
         BLE.setOnCurrentStatusListener(listener);
         byte [] msg = HexStringUtils.hexString2Bytes("F103D9");
         ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {

@@ -1,7 +1,6 @@
 package cancan.bledemo.dfu;
 
 import android.app.Activity;
-
 import no.nordicsemi.android.dfu.DfuBaseService;
 
 /**

@@ -38,14 +38,17 @@
         <activity android:name=".BleDetailActivity"
             android:screenOrientation="portrait"/>
 
-        <!--查看历史坐姿数据页面-->
-        <activity android:name=".BleHistorySitStatusActivity"
+        <!--查看历史用户状态数据页面-->
+        <activity android:name=".BleHistoryUserStatusActivity"
             android:screenOrientation="portrait"/>
 
         <!--查看历史步数数据页面-->
         <activity android:name=".BleHistoryStepActivity"
             android:screenOrientation="portrait"/>
 
+        <!--查看历史坐姿数据页面-->
+        <activity android:name=".BleHistorySitStatusActivity"
+            android:screenOrientation="portrait"/>
 
         <!-- 使用BleLibrary 时候需要配置信 -->
         <service

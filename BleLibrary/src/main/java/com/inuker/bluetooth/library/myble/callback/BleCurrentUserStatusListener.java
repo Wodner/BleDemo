@@ -6,6 +6,6 @@ package com.inuker.bluetooth.library.myble.callback;
  * 邮箱：wuwende@live.cn
  */
 
-public interface BleCurrentStatusListener {
+public interface BleCurrentUserStatusListener {
     void onCurrentStatus(String result);
 }

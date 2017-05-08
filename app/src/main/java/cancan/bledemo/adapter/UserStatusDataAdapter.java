@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cancan.bledemo.R;
-import cancan.bledemo.model.SittingDataModel;
+import cancan.bledemo.model.UserStatusDataModel;
 
 /**
  * 描述：
@@ -18,14 +18,14 @@ import cancan.bledemo.model.SittingDataModel;
  * 邮箱：wuwende@live.cn
  */
 
-public class SittingDataAdapter extends RecyclerView.Adapter<BaseViewHoder>{
+public class UserStatusDataAdapter extends RecyclerView.Adapter<BaseViewHoder>{
 
 
     private Context mContext;
-    private List<SittingDataModel> sittingDataModelList;
+    private List<UserStatusDataModel> sittingDataModelList;
 
 
-    public SittingDataAdapter(Context mContext) {
+    public UserStatusDataAdapter(Context mContext) {
         this.mContext = mContext;
         sittingDataModelList = new ArrayList<>();
     }
@@ -46,7 +46,7 @@ public class SittingDataAdapter extends RecyclerView.Adapter<BaseViewHoder>{
     @Override
     public BaseViewHoder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.item_sitting_list,parent,false);
-        return new SittingDataPointsAdapter(view,mContext);
+        return new UserStatusDataPointsAdapter(view,mContext);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SittingDataAdapter extends RecyclerView.Adapter<BaseViewHoder>{
     }
 
 
-    public void setData( List<SittingDataModel>  dataModelList){
+    public void setData( List<UserStatusDataModel>  dataModelList){
         sittingDataModelList.clear();
         sittingDataModelList.addAll(dataModelList);
         notifyDataSetChanged();

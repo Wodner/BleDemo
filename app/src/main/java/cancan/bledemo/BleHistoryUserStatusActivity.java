@@ -10,22 +10,22 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import cancan.bledemo.adapter.SittingStatusDataAdapter;
-import cancan.bledemo.model.SittingStatusDataModel;
+import cancan.bledemo.adapter.UserStatusDataAdapter;
+import cancan.bledemo.model.UserStatusDataModel;
 
 /**
- * 描述：
- * 作者：Wu on 2017/5/9 00:14
+ * 描述：历史坐姿显示页面
+ * 作者：Wu on 2017/4/24 23:55
  * 邮箱：wuwende@live.cn
  */
 
-public class BleHistorySitStatusActivity extends AppCompatActivity {
+public class BleHistoryUserStatusActivity extends AppCompatActivity {
 
     @Bind(R.id.sitrecyclerview)
     RecyclerView sitrecyclerview;
 
-    private SittingStatusDataAdapter sittingStatusDataAdapter;
-    private List<SittingStatusDataModel> sittingStatusDataModelList;
+    private UserStatusDataAdapter sittingHistoryDataAdapter;
+    private List<UserStatusDataModel> historySitList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,16 +35,18 @@ public class BleHistorySitStatusActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(getIntent().getCharSequenceExtra("title"));
 
         //获得传过来的List<Object>
-        sittingStatusDataModelList = (List<SittingStatusDataModel>) getIntent().getSerializableExtra("history_sit");
+
+        historySitList = (List<UserStatusDataModel>) getIntent().getSerializableExtra("history_user");
         initHistorySitView();
     }
 
 
     private void initHistorySitView() {
-        sittingStatusDataAdapter = new SittingStatusDataAdapter(this);
+        sittingHistoryDataAdapter = new UserStatusDataAdapter(this);
         sitrecyclerview.setLayoutManager(new LinearLayoutManager(this));
-        sitrecyclerview.setAdapter(sittingStatusDataAdapter);
-        sittingStatusDataAdapter.setData(sittingStatusDataModelList);
+        sitrecyclerview.setAdapter(sittingHistoryDataAdapter);
+        sittingHistoryDataAdapter.setData(historySitList);
     }
-}
 
+
+}

@@ -68,9 +68,13 @@ public class DfuActivity extends AppCompatActivity {
     private String bleMac;//设备地址
     private boolean isConnected;
 
-    private String firmwarePath = Environment.getExternalStorageDirectory().getPath() + "/dfuwzV0.1.zip";
 
-//    private String firmwarePath;
+
+
+
+    private String firmwareName ="dfuwzV1.0.6.zip";
+
+    private String firmwarePath = Environment.getExternalStorageDirectory().getPath() + "/" + firmwareName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -330,7 +334,7 @@ public class DfuActivity extends AppCompatActivity {
 
         InputStream myInput;
         OutputStream myOutput = new FileOutputStream(strOutFileName);
-        myInput = this.getAssets().open("dfuwzV0.1.zip");
+        myInput = this.getAssets().open(firmwareName);
         byte[] buffer = new byte[1024];
         int length = myInput.read(buffer);
         while(length > 0)

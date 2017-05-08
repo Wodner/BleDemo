@@ -41,13 +41,19 @@
             android:id="@+id/btn_history_sit_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="查看历史坐姿数据"/>
+            android:text="查看历史用户状态数据"/>
 
         <Button
             android:id="@+id/btn_history_step_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="查看历史步数数据"/>
+
+        <Button
+            android:id="@+id/btn_history_sitting_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="查看历史坐姿数据"/>
 
 
         <Button
@@ -90,10 +96,10 @@
             android:layout_height="wrap_content"
             android:text="发送升级指令" />
         <Button
-            android:id="@+id/btn_get_current_sit_status"
+            android:id="@+id/btn_get_current_user_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="同步当前坐姿数据" />
+            android:text="同步当前用户状态数据" />
 
         <Button
             android:id="@+id/btn_get_current_step_status"
@@ -108,7 +114,51 @@
             android:layout_height="wrap_content"
             android:text="校准坐姿" />
 
+        <Button
+            android:id="@+id/btn_clear_calibrate_sit_position"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="坐姿校准清除" />
 
+
+        <Button
+            android:id="@+id/btn_set_forward_angle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="设置前倾角度"
+            android:visibility="gone"/>
+        <Button
+            android:id="@+id/btn_set_backward_angle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="设置后倾角度"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btn_set_left_angle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="设置左倾角度"
+            android:visibility="gone"/>
+        <Button
+            android:id="@+id/btn_set_right_angle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="设置右倾角度"
+            android:visibility="gone"/>
+
+
+        <Button
+            android:id="@+id/btn_clear_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="清除数据" />
+
+        <Button
+            android:id="@+id/btn_reboot_ble"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="重新启动BLE" />
 
     </LinearLayout>
 

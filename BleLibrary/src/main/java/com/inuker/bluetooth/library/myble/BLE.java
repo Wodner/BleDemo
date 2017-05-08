@@ -5,17 +5,24 @@ import android.util.Log;
 
 import com.inuker.bluetooth.library.connect.response.BleNotifyResponse;
 import com.inuker.bluetooth.library.connect.response.BleUnnotifyResponse;
+import com.inuker.bluetooth.library.myble.callback.BleBackwardAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleBateryListener;
 import com.inuker.bluetooth.library.myble.callback.BleCalibrateSitPositionListener;
-import com.inuker.bluetooth.library.myble.callback.BleCurrentStatusListener;
+import com.inuker.bluetooth.library.myble.callback.BleClearCalibrateSitPositionListener;
+import com.inuker.bluetooth.library.myble.callback.BleClearDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleCurrentStepListener;
+import com.inuker.bluetooth.library.myble.callback.BleCurrentUserStatusListener;
 import com.inuker.bluetooth.library.myble.callback.BleDefaultNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleDisableDeviceListener;
 import com.inuker.bluetooth.library.myble.callback.BleEnableDeviceListener;
-import com.inuker.bluetooth.library.myble.callback.BleHistorySittingStatusSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleForwardAngleListener;
+import com.inuker.bluetooth.library.myble.callback.BleHistorySitStatusSynListener;
 import com.inuker.bluetooth.library.myble.callback.BleHistoryStepSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleHistoryUserStatusSynListener;
+import com.inuker.bluetooth.library.myble.callback.BleLeftAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
 import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
+import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
@@ -27,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -42,7 +50,7 @@ public class BLE {
     private static BleSynDataListener bleSynListener;
     private static BleBateryListener bleBateryListener;
     private static BleMotorFlagListener bleMotorListener;
-    private static BleCurrentStatusListener bleCurrentStatusListener;
+    private static BleCurrentUserStatusListener bleCurrentStatusListener;
     private static BleEnableDeviceListener bleEnableDeviceListener;
     private static BleDisableDeviceListener bleDisableDeviceListener;
     private static BleSetMotorShockListener bleSetMotorShockListener;
@@ -51,9 +59,43 @@ public class BLE {
     private static BleDefaultNotifyListener bleDefaultNotifyListener;
     private static BleOtherNotifyListener bleOtherNotifyListener;
     private static BleCalibrateSitPositionListener bleCalibrateSitPositionListener;
+    private static BleClearCalibrateSitPositionListener bleClarCalibrateSitPositionListener;
+
 
     private static Context mContext;
     private static String mMac;
+
+    private static BleForwardAngleListener bleForwardAngleListener;
+    private static BleBackwardAngleListener bleBackwardAngleListener;
+    private static BleLeftAngleListener bleLeftAngleListener;
+    private static BleRightAngleListener bleRightAngleListener;
+
+    private static BleClearDataListener bleClearDataListener;
+
+
+    public static void setOnBleClearDataListener(BleClearDataListener listener){
+        bleClearDataListener = listener;
+    }
+
+    public static void setOnBleRightAngleListener(BleRightAngleListener listener){
+        bleRightAngleListener = listener;
+    }
+
+    public static void setOnBleLeftAngleListener(BleLeftAngleListener listener){
+        bleLeftAngleListener = listener;
+    }
+
+    public static void setOnBleBackwardAngleListener(BleBackwardAngleListener listener){
+        bleBackwardAngleListener = listener;
+    }
+
+    public static void setOnBleForwardAngleListener(BleForwardAngleListener listener){
+        bleForwardAngleListener = listener;
+    }
+
+    public static void setOnClearCalibrateSitPositionListener(BleClearCalibrateSitPositionListener listener){
+        bleClarCalibrateSitPositionListener = listener;
+    }
 
     public static void setOnCalibrateSitPositionListener(BleCalibrateSitPositionListener listener){
         bleCalibrateSitPositionListener = listener;
@@ -81,7 +123,7 @@ public class BLE {
         bleMotorListener = listener;
     }
 
-    public static void setOnCurrentStatusListener(BleCurrentStatusListener listener){
+    public static void setOnCurrentStatusListener(BleCurrentUserStatusListener listener){
         bleCurrentStatusListener = listener;
     }
 
@@ -127,6 +169,7 @@ public class BLE {
                 Log.w(TAG,  " 收到通知信息头 ------ " + msgHead  + msgID + " ----- "+ "\n");
 //                Log.d(TAG," 收到通知信息 ------ " + Arrays.toString(value)  + "\n"  +String.format("%s", ByteUtils.byteToString(value))+ "\n" );
                 if(msgHead.equals("FE") && msgID.equals("E1")){ //首次同步 电池电量 马达标志位，版本号
+                    Log.w(TAG,  " -------------   首次连接  返回电池电量版本号等-0 --    -----");
                     byte[] battery = new byte[1] ;
                     System.arraycopy(value,3,battery,0,battery.length);
                     byte[] motorFlag = new byte[1] ;
@@ -153,7 +196,7 @@ public class BLE {
                 }
 
                 else if(msgHead.equals("FE") && msgID.equals("E2")){//同步记忆计步数据
-//                    Log.e(TAG, "同步历史步数... " + Arrays.toString(value));
+                    Log.e(TAG, "同步历史步数... " + Arrays.toString(value));
                     byte[] year_h = new byte[1] ;
                     System.arraycopy(value,3,year_h,0,year_h.length);
                     byte[] year_l = new byte[1] ;
@@ -174,13 +217,20 @@ public class BLE {
                     byte[] second = new byte[1] ;
                     System.arraycopy(value,9,second,0,second.length);
                     String mSecond = String.valueOf(BitOperator.byteToInteger(second));
-                    byte[] step_l = new byte[1];
-                    System.arraycopy(value,value.length-2,step_l,0,step_l.length);
-                    byte[] step_h = new byte[1];
-                    System.arraycopy(value,value.length-1,step_h,0,step_h.length);
-                    int h =  BitOperator.byteToInteger(step_h)<<8;
-                    int l =  BitOperator.byteToInteger(step_l);
-                    int step = h|l;
+
+
+                    byte[] step_1 = new byte[1];
+                    System.arraycopy(value,value.length-4,step_1,0,step_1.length);
+                    byte[] step_2 = new byte[1];
+                    System.arraycopy(value,value.length-3,step_2,0,step_2.length);
+                    byte[] step_3 = new byte[1];
+                    System.arraycopy(value,value.length-2,step_3,0,step_3.length);
+                    byte[] step_4 = new byte[1];
+                    System.arraycopy(value,value.length-1,step_4,0,step_4.length);
+
+                    int step =  BitOperator.byteToInteger(step_4)<<24 | BitOperator.byteToInteger(step_3)<<16 |
+                            BitOperator.byteToInteger(step_2)<<8 | BitOperator.byteToInteger(step_1);
+
                     String jsonresult = "";
                     try {
                         JSONObject jsonObj = new JSONObject();
@@ -208,7 +258,7 @@ public class BLE {
                     }
                 }
 
-                else if(msgHead.equals("FE") && msgID.equals("E3")){//同步历史坐姿数据
+                else if(msgHead.equals("FE") && msgID.equals("E3")){//同步史用户状态数据
                     byte[] currentIndex = new byte[1] ;
                     System.arraycopy(value,3,currentIndex,0,currentIndex.length);
                     int index = BitOperator.byteToInteger(currentIndex);
@@ -264,18 +314,119 @@ public class BLE {
                                 e.printStackTrace();
                             }
                             if(bleSynListener!=null){
-                                bleSynListener.onHistorySittingSyn(jsonresult);
-                                new BleRequest().setHistorySittingSynResponse(mContext, mMac, new BleHistorySittingStatusSynListener() {
+                                bleSynListener.onHistoryUserStatusSyn(jsonresult);
+                                new BleRequest().setHistoryUserSynResponse(mContext, mMac, new BleHistoryUserStatusSynListener() {
                                     @Override
                                     public void onFinish(boolean isFinish) {
-                                        Log.d(TAG, "同步历史坐姿完成标志... " + isFinish);
+                                        Log.d(TAG, "同步历史用户状态完成标志... " + isFinish);
                                     }
                                 });
                             }
-
                         }
                     }
                 }
+
+
+                else if(msgHead.equals("FE") && msgID.equals("94")){//历史坐姿数据
+                    byte[] year_h = new byte[1] ;
+                    System.arraycopy(value,3,year_h,0,year_h.length);
+                    byte[] year_l = new byte[1] ;
+                    System.arraycopy(value,4,year_l,0,year_l.length);
+                    String mYear = String.valueOf(BitOperator.byteToInteger(year_h)) + String.valueOf(BitOperator.byteToInteger(year_l));
+
+                    byte[] month = new byte[1] ;
+                    System.arraycopy(value,5,month,0,month.length);
+                    String mMonth = String.valueOf(BitOperator.byteToInteger(month));
+
+                    byte[] day = new byte[1] ;
+                    System.arraycopy(value,6,day,0,day.length);
+                    String mDay = String.valueOf(BitOperator.byteToInteger(day));
+
+
+
+                    byte[] sitting_l = new byte[1];
+                    System.arraycopy(value,7,sitting_l,0,sitting_l.length);
+                    byte[] sitting_h = new byte[1];
+                    System.arraycopy(value,8,sitting_h,0,sitting_h.length);
+
+                    int s_h =  BitOperator.byteToInteger(sitting_h)<<8;
+                    int s_l =  BitOperator.byteToInteger(sitting_l);
+                    int sitting = s_h|s_l;
+
+
+
+                    byte[] forward_l = new byte[1];
+                    System.arraycopy(value,9,forward_l,0,forward_l.length);
+                    byte[] forward_h = new byte[1];
+                    System.arraycopy(value,10,forward_h,0,forward_h.length);
+
+                    int f_h =  BitOperator.byteToInteger(forward_h)<<8;
+                    int f_l =  BitOperator.byteToInteger(forward_l);
+                    int forward = f_h|f_l;
+
+
+
+                    byte[] backward_l = new byte[1];
+                    System.arraycopy(value,11,backward_l,0,backward_l.length);
+                    byte[] backward_h = new byte[1];
+                    System.arraycopy(value,12,backward_h,0,backward_h.length);
+
+                    int b_h =  BitOperator.byteToInteger(backward_h)<<8;
+                    int b_l =  BitOperator.byteToInteger(backward_l);
+                    int backward = b_h|b_l;
+
+
+
+                    byte[] left_leaning_l = new byte[1];
+                    System.arraycopy(value,13,left_leaning_l,0,left_leaning_l.length);
+                    byte[] left_leaning_h = new byte[1];
+                    System.arraycopy(value,14,left_leaning_h,0,left_leaning_h.length);
+
+                    int l_h =  BitOperator.byteToInteger(left_leaning_h)<<8;
+                    int l_l =  BitOperator.byteToInteger(left_leaning_l);
+                    int leftLeaning = l_h|l_l;
+
+
+
+                    byte[] right_leaning_l = new byte[1];
+                    System.arraycopy(value,15,right_leaning_l,0,right_leaning_l.length);
+                    byte[] rigth_leaning_h = new byte[1];
+                    System.arraycopy(value,16,rigth_leaning_h,0,rigth_leaning_h.length);
+
+                    int r_h =  BitOperator.byteToInteger(rigth_leaning_h)<<8;
+                    int r_l =  BitOperator.byteToInteger(right_leaning_l);
+                    int rightLeaning = r_h|r_l;
+
+                    String jsonresult = "";
+                    try {
+                        JSONObject jsonObj = new JSONObject();
+                        jsonObj.put("code","0");
+                        jsonObj.put("year",  mYear);
+                        jsonObj.put("month", mMonth);
+                        jsonObj.put("day", mDay);
+                        jsonObj.put("sitting", sitting);
+                        jsonObj.put("forward", forward);
+                        jsonObj.put("backward", backward);
+                        jsonObj.put("leftLeaning", leftLeaning);
+                        jsonObj.put("rightLeaning", rightLeaning);
+                        jsonresult = jsonObj.toString();//生成返回字符串
+                    } catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    if(bleSynListener!=null){
+                        bleSynListener.onHistorySittingStatusSyn(jsonresult);
+                        new BleRequest().setHistorySittingSynResponse(mContext, mMac, new BleHistorySitStatusSynListener() {
+                            @Override
+                            public void onReceive(boolean isFinish) {
+                                Log.d(TAG, "同步历史历史坐姿完成标志... " + isFinish);
+                            }
+                        });
+                    }
+
+
+                }
+
 
                 else if(msgHead.equals("FE") && msgID.equals("E4")){//数据交换完成
                     if(bleSynListener!=null){
@@ -307,11 +458,70 @@ public class BLE {
                          bleMotorListener.onMotor(true,ByteUtils.byteToString(motorFlag),BitOperator.byteToInteger(second));
                 }
 
-                else if(msgHead.equals("FE") && msgID.equals("E9")){//同步当前坐姿数据返回信息
+                else if(msgHead.equals("FE") && msgID.equals("E9")){//同步当前用户状态数据返回信息
+//                    byte[] currentIndex = new byte[1] ;
+//                    System.arraycopy(value,3,currentIndex,0,currentIndex.length);
+//                    int index = BitOperator.byteToInteger(currentIndex);
+//
+//                    if(index==0){
+//                        byte[] month = new byte[1] ;
+//                        System.arraycopy(value,4,month,0,month.length);
+//                        sittingMonth = BitOperator.byteToInteger(month);
+//                        byte[] day = new byte[1] ;
+//                        System.arraycopy(value,5,day,0,day.length);
+//                        sittingDay = BitOperator.byteToInteger(day);
+//                        byte[] count = new byte[1] ;
+//                        System.arraycopy(value,6,count,0,count.length);
+//                        sittingPoints = BitOperator.byteToInteger(count);
+//                        byte[] num = new byte[1] ;
+//                        System.arraycopy(value,7,num,0,num.length);
+//                        sittingFrame = BitOperator.byteToInteger(num);
+//                        pointLength=0;
+//                        pointsArray = new byte[sittingPoints*3];
+//                    }else {
+//                        byte[] points = new byte[value.length-4];
+//                        System.arraycopy(value,4,points,0,points.length);
+//                        if ((index  < sittingFrame)) {
+//                            System.arraycopy(points,0,pointsArray,pointLength,points.length);
+//                            pointLength = pointLength + points.length;
+//                        }else if(index == sittingFrame){
+//                            System.arraycopy(points,0,pointsArray,pointLength,points.length);
+//                            pointLength = pointLength + points.length;
+//                            String jsonresult = "";
+//                            try {
+//                                JSONObject jsonObj = new JSONObject();
+//                                jsonObj.put("code",0);
+//                                jsonObj.put("month",  sittingMonth);
+//                                jsonObj.put("day", sittingDay);
+//                                JSONArray jsonArr = new JSONArray();//json格式的数组
+//                                for (int i=0;i<pointLength/3;i++){
+//                                    byte [] hour = new byte[1];
+//                                    hour[0] = pointsArray[(i*3)];
+//                                    byte [] minute = new byte[1];
+//                                    minute[0] = pointsArray[(i*3+1)];
+//                                    byte [] status = new byte[1] ;
+//                                    status[0] = pointsArray[(i*3+2)];
+//                                    JSONObject jsonObjArr = new JSONObject();
+//                                    jsonObjArr.put("hour", BitOperator.byteToInteger(hour));
+//                                    jsonObjArr.put("minute", BitOperator.byteToInteger(minute));
+//                                    jsonObjArr.put("status", getUserStatus(BitOperator.byteToInteger(status)));
+//                                    jsonArr.put(jsonObjArr);//将json格式的数据放到json格式的数组里
+//                                }
+//                                jsonObj.put("rows", jsonArr);//再将这个json格式的的数组放到最终的json对象中。
+//                                jsonresult = jsonObj.toString();//生成返回字符串
+//                            } catch (JSONException e) {
+//                                // TODO Auto-generated catch block
+//                                e.printStackTrace();
+//                            }
+//                            if(bleCurrentStatusListener!=null)
+//                                bleCurrentStatusListener.onCurrentStatus(jsonresult);
+//                        }
+//                    }
+
+
                     byte[] currentIndex = new byte[1] ;
                     System.arraycopy(value,3,currentIndex,0,currentIndex.length);
                     int index = BitOperator.byteToInteger(currentIndex);
-
                     if(index==0){
                         byte[] month = new byte[1] ;
                         System.arraycopy(value,4,month,0,month.length);
@@ -328,6 +538,7 @@ public class BLE {
                         pointLength=0;
                         pointsArray = new byte[sittingPoints*3];
                     }else {
+                        Log.d(TAG,"总点数：" + sittingPoints + " 当前帧 ： "  + index + " 帧数 ：" + sittingFrame + " --- " + Arrays.toString(currentIndex));
                         byte[] points = new byte[value.length-4];
                         System.arraycopy(value,4,points,0,points.length);
                         if ((index  < sittingFrame)) {
@@ -366,7 +577,12 @@ public class BLE {
                                 bleCurrentStatusListener.onCurrentStatus(jsonresult);
                         }
                     }
+
                 }
+
+
+
+
 
                 else if(msgHead.equals("FE") && msgID.equals("E6")){//设备激活成功返回
                     if(bleEnableDeviceListener!=null)
@@ -404,13 +620,19 @@ public class BLE {
                     byte[] second = new byte[1] ;
                     System.arraycopy(value,9,second,0,second.length);
                     String mSecond = String.valueOf(BitOperator.byteToInteger(second));
-                    byte[] step_l = new byte[1];
-                    System.arraycopy(value,value.length-2,step_l,0,step_l.length);
-                    byte[] step_h = new byte[1];
-                    System.arraycopy(value,value.length-1,step_h,0,step_h.length);
-                    int h =  BitOperator.byteToInteger(step_h)<<8;
-                    int l =  BitOperator.byteToInteger(step_l);
-                    int step = h|l;
+
+
+                    byte[] step_1 = new byte[1];
+                    System.arraycopy(value,value.length-4,step_1,0,step_1.length);
+                    byte[] step_2 = new byte[1];
+                    System.arraycopy(value,value.length-3,step_2,0,step_2.length);
+                    byte[] step_3 = new byte[1];
+                    System.arraycopy(value,value.length-2,step_3,0,step_3.length);
+                    byte[] step_4 = new byte[1];
+                    System.arraycopy(value,value.length-1,step_4,0,step_4.length);
+
+                    int step =  BitOperator.byteToInteger(step_4)<<24 | BitOperator.byteToInteger(step_3)<<16 |
+                            BitOperator.byteToInteger(step_2)<<8 | BitOperator.byteToInteger(step_1);
                     String jsonresult = "";
                     try {
                         JSONObject jsonObj = new JSONObject();
@@ -431,12 +653,50 @@ public class BLE {
                         bleCurrentStepListener.onStep(jsonresult);
                 }
 
-                else if(msgHead.equals("FE") && msgID.equals("EC")){
+                else if(msgHead.equals("FE") && msgID.equals("EC")){//坐姿校准
                     if (bleCalibrateSitPositionListener!=null){
                         bleCalibrateSitPositionListener.onCalibrate(true);
                     }
                 }
 
+
+                else if(msgHead.equals("FE") && msgID.equals("ED")){//坐姿校准清除
+                    if(bleClarCalibrateSitPositionListener!=null){
+                        bleClarCalibrateSitPositionListener.onClearCalibrate(true);
+                    }
+                }
+
+                else if(msgHead.equals("FE") && msgID.equals("A0")){//设置前倾角度
+                    if(bleForwardAngleListener!=null){
+                        bleForwardAngleListener.onForwardAngle(true);
+                    }
+                }
+
+                else if(msgHead.equals("FE") && msgID.equals("A1")){//设置后倾角度
+                    if(bleBackwardAngleListener!=null){
+                        bleBackwardAngleListener.onBackwardAngle(true);
+                    }
+                }
+
+                else if(msgHead.equals("FE") && msgID.equals("A2")){//设置左倾角度
+                    if(bleLeftAngleListener!=null){
+                        bleLeftAngleListener.onLeftAngle(true);
+                    }
+                }
+
+                else if(msgHead.equals("FE") && msgID.equals("A3")){//设置右倾角度
+                    if (bleRightAngleListener!=null){
+                        bleRightAngleListener.onRightAngle(true);
+                    }
+                }
+
+
+
+                else if(msgHead.equals("FE") && msgID.equals("A5")){//清除BLE数据设备应答
+                    if(bleClearDataListener!=null){
+                        bleClearDataListener.onClearData(true);
+                    }
+                }
 
 
             }

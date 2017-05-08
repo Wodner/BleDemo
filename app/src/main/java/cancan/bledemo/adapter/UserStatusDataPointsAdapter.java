@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import cancan.bledemo.R;
-import cancan.bledemo.model.SittingDataModel;
+import cancan.bledemo.model.UserStatusDataModel;
 
 /**
  * 描述：
@@ -17,7 +17,7 @@ import cancan.bledemo.model.SittingDataModel;
  * 邮箱：wuwende@live.cn
  */
 
-public class SittingDataPointsAdapter extends BaseViewHoder<SittingDataModel> {
+public class UserStatusDataPointsAdapter extends BaseViewHoder<UserStatusDataModel> {
 
 
 
@@ -27,7 +27,7 @@ public class SittingDataPointsAdapter extends BaseViewHoder<SittingDataModel> {
     private TextView tvDate;
 
 
-    public SittingDataPointsAdapter(View itemView, Context mContext) {
+    public UserStatusDataPointsAdapter(View itemView, Context mContext) {
         super(itemView);
         this.mContext = mContext;
         tvDate = (TextView)itemView.findViewById(R.id.tv_date);
@@ -36,7 +36,7 @@ public class SittingDataPointsAdapter extends BaseViewHoder<SittingDataModel> {
 
 
     @Override
-    public void refreshData(SittingDataModel data, int position) {
+    public void refreshData(UserStatusDataModel data, int position) {
         tvDate.setText(data.getMonth()+"月" +data.getDay()+"日");
         HorizontalAdapter horizontalAdapter = new HorizontalAdapter(mContext);
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL,false));
@@ -48,7 +48,7 @@ public class SittingDataPointsAdapter extends BaseViewHoder<SittingDataModel> {
     private class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.MyViewHolder>{
 
         private Context mContext;
-        private SittingDataModel sittingDataModel;
+        private UserStatusDataModel sittingDataModel;
 
         public HorizontalAdapter(Context mContext) {
             this.mContext = mContext;
@@ -90,7 +90,7 @@ public class SittingDataPointsAdapter extends BaseViewHoder<SittingDataModel> {
             }
         }
 
-        public void setData(SittingDataModel sittingData){
+        public void setData(UserStatusDataModel sittingData){
             this.sittingDataModel = sittingData;
             notifyDataSetChanged();
         }
