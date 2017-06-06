@@ -20,9 +20,18 @@ public class UserStatusDataModel implements Serializable {
      */
 
     private int code;
+    private int year;
     private int month;
     private int day;
     private List<RowsBean> rows;
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
 
     public int getCode() {
         return code;

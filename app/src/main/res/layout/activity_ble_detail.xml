@@ -126,26 +126,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="设置前倾角度"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
         <Button
             android:id="@+id/btn_set_backward_angle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="设置后倾角度"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
 
         <Button
             android:id="@+id/btn_set_left_angle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="设置左倾角度"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
         <Button
             android:id="@+id/btn_set_right_angle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="设置右倾角度"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
 
 
         <Button
@@ -159,6 +159,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="重新启动BLE" />
+
+        <Button
+            android:id="@+id/btn_set_nickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="设置BLE昵称" />
 
     </LinearLayout>
 

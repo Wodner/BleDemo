@@ -37,7 +37,7 @@ public class UserStatusDataPointsAdapter extends BaseViewHoder<UserStatusDataMod
 
     @Override
     public void refreshData(UserStatusDataModel data, int position) {
-        tvDate.setText(data.getMonth()+"月" +data.getDay()+"日");
+        tvDate.setText(data.getYear() + "年" + data.getMonth()+"月" +data.getDay()+"日");
         HorizontalAdapter horizontalAdapter = new HorizontalAdapter(mContext);
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL,false));
         recyclerView.setAdapter(horizontalAdapter);

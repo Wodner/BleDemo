@@ -26,11 +26,13 @@ import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
 import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleRebootListener;
 import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
+import com.inuker.bluetooth.library.myble.callback.BleSetBleNickname;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.myutils.BitOperator;
 import com.inuker.bluetooth.library.myble.myutils.HexStringUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 
 /**
  * 描述：
@@ -48,6 +50,45 @@ public class BleRequest {
 
     public interface SynFinishListener{
         void finishSyn(boolean isFinish);
+    }
+
+
+    /**
+     * 设置ble昵称
+     * @param context
+     * @param mac
+     * @param name F1H	xxH	96H	中文最多5个汉字，英文最多17个字节
+
+     * @param listener
+     */
+    public void setBleNickname(Context context, String mac,String name,final BleSetBleNickname listener){
+        BLE.setOnBleSetBleNickname(listener);
+        String hexNameLenghth = Integer.toHexString(name.getBytes().length+3);
+        Log.d(TAG,"=========>" + hexNameLenghth);
+        if ((hexNameLenghth.length() & 0x01) != 0) {//奇数
+            hexNameLenghth = "0"+ hexNameLenghth;
+        }
+
+        byte [] msgHead = HexStringUtils.hexString2Bytes("F1" + hexNameLenghth + "96");
+        byte [] msg = new byte[msgHead.length + name.getBytes().length];
+
+        System.arraycopy(msgHead,0,msg,0,msgHead.length);
+        System.arraycopy(name.getBytes(),0,msg,msgHead.length,name.getBytes().length);
+
+        Log.d(TAG,msg.length + " ---- " + "F1" + msg.length + "95" + "\n" + Arrays.toString(msg));
+
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送设置昵称命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送设置昵称命令失败 --  " + code);
+                    listener.onSetNickname(false);
+                }
+            }
+        });
+
     }
 
 
@@ -291,7 +332,7 @@ public class BleRequest {
      * @param time
      * @param listener
      */
-    public void setMotorShock(Context context, String mac, boolean isEnable,int time ,BleSetMotorShockListener listener){
+    public void setMotorShock(Context context, String mac, boolean isEnable,int time ,final BleSetMotorShockListener listener){
         BLE.setOnMotorShockListener(listener);
         if(isEnable){
             String hexTime = Integer.toHexString(time);
@@ -306,6 +347,7 @@ public class BleRequest {
                     if (code==0){
                         Log.d(TAG,"发送设置马达震动成功 --  " + code);
                     }else {
+                        listener.onSetMotorShock(false);
                         Log.d(TAG,"发送设置马达震动失败 --  " + code);
                     }
                 }
@@ -319,6 +361,7 @@ public class BleRequest {
                         Log.d(TAG,"发送关闭马达成功 --  " + code);
                     }else {
                         Log.d(TAG,"发送关闭马达失败 --  " + code);
+                        listener.onSetMotorShock(false);
                     }
                 }
             });
@@ -553,7 +596,7 @@ public class BleRequest {
      * @param context
      * @param mac
      */
-    public  void synTime(Context context, String mac){
+    public  void   synTime(Context context, String mac){
         byte []  head = new byte[3];
         head[0] = BitOperator.integerTo1Byte(0xF1);
         head[1] = BitOperator.integerTo1Byte(0x0A);

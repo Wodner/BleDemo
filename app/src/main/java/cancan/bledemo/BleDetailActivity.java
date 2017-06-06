@@ -40,12 +40,14 @@ import com.inuker.bluetooth.library.myble.callback.BleMotorFlagListener;
 import com.inuker.bluetooth.library.myble.callback.BleOtherNotifyListener;
 import com.inuker.bluetooth.library.myble.callback.BleRebootListener;
 import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
+import com.inuker.bluetooth.library.myble.callback.BleSetBleNickname;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.Bind;
@@ -265,21 +267,21 @@ public class BleDetailActivity extends AppCompatActivity {
 
     @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_user_status,R.id.btn_calibrate_sit_position,R.id.btn_reboot_ble,
             R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status,R.id.btn_history_step_status,R.id.btn_clear_data,R.id.btn_history_sitting_status,
-            R.id.btn_clear_calibrate_sit_position,R.id.btn_set_forward_angle,R.id.btn_set_backward_angle,R.id.btn_set_left_angle,R.id.btn_set_right_angle})
+            R.id.btn_clear_calibrate_sit_position,R.id.btn_set_forward_angle,R.id.btn_set_backward_angle,R.id.btn_set_left_angle,R.id.btn_set_right_angle,R.id.btn_set_nickname})
     public void onClick(View view) {
         switch (view.getId()) {
-//            case R.id.btn_set_right_angle:
-//                setAngle(3);
-//                break;
-//            case R.id.btn_set_left_angle:
-//                setAngle(2);
-//                break;
-//            case R.id.btn_set_backward_angle:
-//                setAngle(1);
-//                break;
-//            case R.id.btn_set_forward_angle:
-//                setAngle(0);
-//                break;
+            case R.id.btn_set_right_angle:
+                setAngle(3);
+                break;
+            case R.id.btn_set_left_angle:
+                setAngle(2);
+                break;
+            case R.id.btn_set_backward_angle:
+                setAngle(1);
+                break;
+            case R.id.btn_set_forward_angle:
+                setAngle(0);
+                break;
             case R.id.btn_clear_calibrate_sit_position:
                 mBleRequest.setClearCalibrateSitPostion(mContext, bleMac, new BleClearCalibrateSitPositionListener() {
                     @Override
@@ -456,9 +458,52 @@ public class BleDetailActivity extends AppCompatActivity {
                 });
                 break;
 
+            case R.id.btn_set_nickname:
+                setBleNickname();
+                break;
         }
     }
 
+
+    /**
+     * 设置昵称
+     */
+    private void setBleNickname(){
+        final EditText editTime = new EditText(mContext);
+        editTime.setHint("中文最多5个汉字，英文最多17个字节");
+        new  AlertDialog.Builder(mContext)
+                .setTitle("设置BLE昵称" )
+                .setView(editTime)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if(!TextUtils.isEmpty(editTime.getText().toString())){
+                            String name = editTime.getText().toString().trim();
+                            if(name.getBytes().length>17){
+                                Toast.makeText(mContext,"昵称太长了",Toast.LENGTH_SHORT).show();
+                                return;
+                            }else{
+                                mBleRequest.setBleNickname(mContext, bleMac, name, new BleSetBleNickname() {
+                                    @Override
+                                    public void onSetNickname(boolean isSuccess) {
+                                        if (isSuccess){
+                                            Toast.makeText(mContext,"设置成功",Toast.LENGTH_SHORT).show();
+                                        }else {
+                                            Toast.makeText(mContext,"设置失败",Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                            }
+                            Log.d(TAG,name + " -------> " + name.getBytes().length + " - - "+ Arrays.toString(name.getBytes()));
+                        }else {
+                            Toast.makeText(mContext,"输入内容不能为空",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                })
+                .setNegativeButton("取消" ,  null )
+                .show();
+    }
 
     /**
      * 设置马达震动弹出
