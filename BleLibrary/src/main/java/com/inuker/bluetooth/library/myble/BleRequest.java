@@ -28,6 +28,7 @@ import com.inuker.bluetooth.library.myble.callback.BleRebootListener;
 import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetBleNickname;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
+import com.inuker.bluetooth.library.myble.callback.BleTodaytSitPositionListener;
 import com.inuker.bluetooth.library.myble.myutils.BitOperator;
 import com.inuker.bluetooth.library.myble.myutils.HexStringUtils;
 
@@ -52,6 +53,27 @@ public class BleRequest {
         void finishSyn(boolean isFinish);
     }
 
+
+    /**
+     * 获取今天坐姿数据
+     * @param context
+     * @param mac
+     * @param listener
+     */
+    public void getTodaySitPosition(Context context, String mac, final BleTodaytSitPositionListener listener){
+        BLE.setOnTodaySitStateListener(listener);
+        byte [] msg = HexStringUtils.hexString2Bytes("F10397");
+        ClientManager.getClient(context).write(mac, MyConstant.SERVICE_UUID, MyConstant.CHARACTERISTIC_READ_WRITE_UUID, msg, new BleWriteResponse() {
+            @Override
+            public void onResponse(int code) {
+                if (code==0){
+                    Log.d(TAG,"发送获取今天数据命令成功 --  " + code);
+                }else {
+                    Log.d(TAG,"发送获取今天数据命令命令失败 --  " + code);
+                }
+            }
+        });
+    }
 
     /**
      * 设置ble昵称

@@ -72,7 +72,7 @@ public class DfuActivity extends AppCompatActivity {
 
 
 
-    private String firmwareName ="dfuwzV1.1.6.zip";
+    private String firmwareName ="dfuwzV1.2.3.zip";
 
     private String firmwarePath = Environment.getExternalStorageDirectory().getPath() + "/" + firmwareName;
 

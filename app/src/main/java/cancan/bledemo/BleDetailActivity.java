@@ -43,6 +43,7 @@ import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetBleNickname;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
+import com.inuker.bluetooth.library.myble.callback.BleTodaytSitPositionListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
 
 import java.io.Serializable;
@@ -56,6 +57,7 @@ import butterknife.OnClick;
 import cancan.bledemo.model.FirmwareModel;
 import cancan.bledemo.model.SittingStatusDataModel;
 import cancan.bledemo.model.StepModel;
+import cancan.bledemo.model.TodaySitStateMode;
 import cancan.bledemo.model.UserStatusDataModel;
 import cancan.bledemo.utils.JsonParser;
 
@@ -84,6 +86,8 @@ public class BleDetailActivity extends AppCompatActivity {
     Button btnGetCurrentStep;
     @Bind(R.id.tv_first_response)
     TextView tvFiestResponse;
+    @Bind(R.id.btn_get_today_sit)
+    Button btnGetTodaySit;
 
     private final String TAG = "BLE_DETAIL";
 
@@ -267,7 +271,7 @@ public class BleDetailActivity extends AppCompatActivity {
 
     @OnClick({R.id.btn_get_battery, R.id.btn_get_motor, R.id.btn_disable_monitor, R.id.btn_enable_monitor,R.id.btn_get_current_user_status,R.id.btn_calibrate_sit_position,R.id.btn_reboot_ble,
             R.id.btn_get_current_step_status,R.id.btn_enable, R.id.btn_disenable, R.id.btn_start_dfu,R.id.btn_history_sit_status,R.id.btn_history_step_status,R.id.btn_clear_data,R.id.btn_history_sitting_status,
-            R.id.btn_clear_calibrate_sit_position,R.id.btn_set_forward_angle,R.id.btn_set_backward_angle,R.id.btn_set_left_angle,R.id.btn_set_right_angle,R.id.btn_set_nickname})
+            R.id.btn_clear_calibrate_sit_position,R.id.btn_set_forward_angle,R.id.btn_set_backward_angle,R.id.btn_set_left_angle,R.id.btn_set_right_angle,R.id.btn_set_nickname,R.id.btn_get_today_sit})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_set_right_angle:
@@ -460,6 +464,19 @@ public class BleDetailActivity extends AppCompatActivity {
 
             case R.id.btn_set_nickname:
                 setBleNickname();
+                break;
+
+            case R.id.btn_get_today_sit:
+                mBleRequest.getTodaySitPosition(mContext,bleMac,new BleTodaytSitPositionListener(){
+                    @Override
+                    public void onSitPositionState(String result) {
+                        Log.d(TAG,"RESULT : " +  result) ;
+                        TodaySitStateMode todaySitStateMode = JsonParser.parseWithGson(TodaySitStateMode.class,result);
+                        btnGetTodaySit.setText(todaySitStateMode.getMonth()+"月" + todaySitStateMode.getDay()+"日，\n"
+                                + todaySitStateMode.getSitting() + "s," + todaySitStateMode.getForward() + "s," + todaySitStateMode.getBackward() + "s,"
+                                + todaySitStateMode.getLeftLeaning() + "s," + todaySitStateMode.getRightLeaning() + "s");
+                    }
+                });
                 break;
         }
     }

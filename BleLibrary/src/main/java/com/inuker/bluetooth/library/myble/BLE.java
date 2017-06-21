@@ -26,6 +26,7 @@ import com.inuker.bluetooth.library.myble.callback.BleRightAngleListener;
 import com.inuker.bluetooth.library.myble.callback.BleSetBleNickname;
 import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
+import com.inuker.bluetooth.library.myble.callback.BleTodaytSitPositionListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
 import com.inuker.bluetooth.library.myble.myutils.BitOperator;
 import com.inuker.bluetooth.library.myble.myutils.HexStringUtils;
@@ -77,6 +78,7 @@ public class BLE {
     private static BleClearDataListener bleClearDataListener;
 
     private static BleSetBleNickname bleSetBleNickname;
+    private static BleTodaytSitPositionListener bleTodaytSitPositionListener;
 
     public static void setOnBleSetBleNickname(BleSetBleNickname listener){
         bleSetBleNickname = listener;
@@ -156,6 +158,11 @@ public class BLE {
         bleUserStatusAndSittingStatusListener = listener;
     }
 
+    public static void setOnTodaySitStateListener(BleTodaytSitPositionListener listener){
+        bleTodaytSitPositionListener = listener;
+    }
+
+
     private static int sittingYear;
     private static int sittingMonth;
     private static int sittingDay;
@@ -177,7 +184,7 @@ public class BLE {
                 String msgID = result.substring(4,6).toUpperCase();
                 int btyeLength = Integer.parseInt(result.substring(2,4).toUpperCase(),16);
                 Log.w(TAG,  " 收到通知信息头 ------ " + msgHead  + msgID + " ----- " + " 字节长度 ：" + btyeLength + "实际长度：" + value.length +"\n" );
-//                Log.d(TAG," 收到通知信息 ------ " + Arrays.toString(value)  + "\n"  +String.format("%s", ByteUtils.byteToString(value))+ "\n" );
+                Log.d(TAG," 收到通知信息 ------ " + Arrays.toString(value)  + "\n"  +String.format("%s", ByteUtils.byteToString(value))+ "\n" );
                 if(msgHead.equals("FE") && msgID.equals("E1")){ //首次同步 电池电量 马达标志位，版本号
                     Log.w(TAG,  " -------------   首次连接  返回电池电量版本号等-0 --    -----");
                     byte[] battery = new byte[1] ;
@@ -697,6 +704,78 @@ public class BLE {
                                 bleSetBleNickname.onSetNickname(true);
                             }else {
                                 bleSetBleNickname.onSetNickname(false);
+                            }
+                        }
+                    }
+                }
+
+
+                else if(msgHead.equals("FE") && msgID.equals("A7")){ // 获取今天的坐姿数据
+                    if(btyeLength==value.length){
+                        if(bleTodaytSitPositionListener!=null){
+
+                            byte[] month = new byte[1] ;
+                            System.arraycopy(value,3,month,0,month.length);
+                            int mMonth = byteToInteger(month);
+                            byte[] day = new byte[1] ;
+                            System.arraycopy(value,4,day,0,day.length);
+                            int mDay = byteToInteger(day);
+
+
+                            byte[] sitting_l = new byte[1];
+                            System.arraycopy(value,5,sitting_l,0,sitting_l.length);
+                            byte[] sitting_h = new byte[1];
+                            System.arraycopy(value,6,sitting_h,0,sitting_h.length);
+
+                            int sitting = byteToInteger(sitting_h)<<8|byteToInteger(sitting_l);
+
+
+                            byte[] forward_l = new byte[1];
+                            System.arraycopy(value,7,forward_l,0,forward_l.length);
+                            byte[] forward_h = new byte[1];
+                            System.arraycopy(value,8,forward_h,0,forward_h.length);
+
+                            int forward = byteToInteger(forward_h)<<8|byteToInteger(forward_l);
+
+                            byte[] backward_l = new byte[1];
+                            System.arraycopy(value,9,backward_l,0,backward_l.length);
+                            byte[] backward_h = new byte[1];
+                            System.arraycopy(value,10,backward_h,0,backward_h.length);
+
+                            int backward = byteToInteger(backward_h)<<8|byteToInteger(backward_l);
+
+                            byte[] leftLeaning_l = new byte[1];
+                            System.arraycopy(value,11,leftLeaning_l,0,leftLeaning_l.length);
+                            byte[] leftLeaning_h = new byte[1];
+                            System.arraycopy(value,12,leftLeaning_h,0,leftLeaning_h.length);
+
+                            int leftLeaning = byteToInteger(leftLeaning_h)<<8|byteToInteger(leftLeaning_l);
+
+                            byte[] rightLeaning_l = new byte[1];
+                            System.arraycopy(value,13,rightLeaning_l,0,rightLeaning_l.length);
+                            byte[] rightLeaning_h = new byte[1];
+                            System.arraycopy(value,14,rightLeaning_h,0,rightLeaning_h.length);
+
+                            int rightLeaning = byteToInteger(rightLeaning_h)<<8|byteToInteger(rightLeaning_l);
+
+                            Log.d(TAG, mMonth+"月" + mDay+"日，" + sitting + "s," + forward + "s," + backward + "s," + leftLeaning + "s," + rightLeaning + "s" );
+
+                            String jsonresult = "";
+                            try {
+                                JSONObject jsonObj = new JSONObject();
+                                jsonObj.put("code", "0");
+                                jsonObj.put("month", mMonth);
+                                jsonObj.put("day", mDay);
+                                jsonObj.put("sitting", sitting);
+                                jsonObj.put("forward", forward);
+                                jsonObj.put("backward", backward);
+                                jsonObj.put("leftLeaning", leftLeaning);
+                                jsonObj.put("rightLeaning", rightLeaning);
+                                jsonresult = jsonObj.toString();//生成返回字符串
+                                bleTodaytSitPositionListener.onSitPositionState(jsonresult);
+                            } catch (JSONException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
                             }
                         }
                     }
