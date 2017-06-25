@@ -45,6 +45,7 @@ import com.inuker.bluetooth.library.myble.callback.BleSetMotorShockListener;
 import com.inuker.bluetooth.library.myble.callback.BleSynDataListener;
 import com.inuker.bluetooth.library.myble.callback.BleTodaytSitPositionListener;
 import com.inuker.bluetooth.library.myble.callback.BleUserStatusAndSittingStatusListener;
+import com.inuker.bluetooth.library.myble.myutils.MacUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cancan.bledemo.dfu.DfuActivity;
 import cancan.bledemo.model.FirmwareModel;
 import cancan.bledemo.model.SittingStatusDataModel;
 import cancan.bledemo.model.StepModel;
@@ -396,6 +398,10 @@ public class BleDetailActivity extends AppCompatActivity {
                     @Override
                     public void onDfuModel(boolean isDfu) {
                         if (isDfu){
+                            Intent intent = new Intent(BleDetailActivity.this, DfuActivity.class);
+                            intent.putExtra("mac", MacUtils.getMacIncrease(bleMac));/**DFU 升级mac 地址是 原来地址最后加一*/
+                            intent.putExtra("name",bleName);
+                            startActivity(intent);
                             finish();
                         }else {
                             Toast.makeText(mContext,"发送升级指令失败，请重新发送。",Toast.LENGTH_SHORT).show();
@@ -473,8 +479,11 @@ public class BleDetailActivity extends AppCompatActivity {
                         Log.d(TAG,"RESULT : " +  result) ;
                         TodaySitStateMode todaySitStateMode = JsonParser.parseWithGson(TodaySitStateMode.class,result);
                         btnGetTodaySit.setText(todaySitStateMode.getMonth()+"月" + todaySitStateMode.getDay()+"日，\n"
-                                + todaySitStateMode.getSitting() + "s," + todaySitStateMode.getForward() + "s," + todaySitStateMode.getBackward() + "s,"
-                                + todaySitStateMode.getLeftLeaning() + "s," + todaySitStateMode.getRightLeaning() + "s");
+                                + "正坐：" + todaySitStateMode.getSitting() + "s,"
+                                + "前倾：" + todaySitStateMode.getForward() + "s,"
+                                + "后倾：" + todaySitStateMode.getBackward() + "s,"
+                                + "左倾：" + todaySitStateMode.getLeftLeaning() + "s,"
+                                + "右倾：" + todaySitStateMode.getRightLeaning() + "s");
                     }
                 });
                 break;

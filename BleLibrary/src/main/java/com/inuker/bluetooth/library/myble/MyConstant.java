@@ -22,5 +22,7 @@ public class MyConstant {
     public static final UUID OTHER_CHARACTERISTIC_NOTIFY_UUID = UUID.fromString("0000ffa2-0000-1000-8000-00805f9b34fb");
 //    public static final UUID OTHER_CHARACTERISTIC_READ_WRITE_UUID = UUID.fromString("0000eea1-0000-1000-8000-00805f9b34fb");
 
+    public static final UUID[] MY_UUID = {UUID.fromString("00005a48-0000-1000-8000-00805f9b34fb")};
+
 
 }

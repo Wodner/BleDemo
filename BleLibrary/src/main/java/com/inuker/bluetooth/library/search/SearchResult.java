@@ -2,6 +2,7 @@ package com.inuker.bluetooth.library.search;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
+import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
@@ -37,6 +38,10 @@ public class SearchResult implements Parcelable {
         return device != null ? device.getAddress() : "";
     }
 
+    public ParcelUuid[] getUuuids(){
+        ParcelUuid[] parcelUuids = device.getUuids();
+        return parcelUuids == null ? null : parcelUuids;
+    }
 
 
     public BluetoothDevice getDevice() {

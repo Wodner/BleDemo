@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import android.os.Build;
 
+import com.inuker.bluetooth.library.myble.MyConstant;
 import com.inuker.bluetooth.library.search.BluetoothSearcher;
 import com.inuker.bluetooth.library.search.SearchResult;
 import com.inuker.bluetooth.library.search.response.BluetoothSearchResponse;
@@ -15,6 +16,7 @@ import com.inuker.bluetooth.library.utils.BluetoothUtils;
  * @author dingjikerbo
  */
 public class BluetoothLESearcher extends BluetoothSearcher {
+
 
 	private BluetoothLESearcher() {
 		mBluetoothAdapter = BluetoothUtils.getBluetoothAdapter();
@@ -34,8 +36,8 @@ public class BluetoothLESearcher extends BluetoothSearcher {
 	public void startScanBluetooth(BluetoothSearchResponse response) {
 		// TODO Auto-generated method stub
 		super.startScanBluetooth(response);
-		
-		mBluetoothAdapter.startLeScan(mLeScanCallback);
+//		mBluetoothAdapter.startLeScan(mLeScanCallback);
+		mBluetoothAdapter.startLeScan(MyConstant.MY_UUID,mLeScanCallback);
 	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)

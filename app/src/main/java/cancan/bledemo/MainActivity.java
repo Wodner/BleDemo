@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Bind(R.id.swipe_refresh)
     SwipeRefreshLayout swipeRefresh;
 
-    private final String TAG = "MY_BLE";
+    private final String TAG = MainActivity.class.getName();
     private final int RC_LOACTION = 123;
     private List<SearchResult> deviceList;
     private DeviceAdapter deviceAdapter;
@@ -173,8 +173,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * 扫描设备
      */
     private void scanBle() {
-        SearchRequest request = new SearchRequest.Builder()
+        final SearchRequest request = new SearchRequest.Builder()
                 .searchBluetoothLeDevice(3000, 1)   // 先扫BLE设备1次，每次3s
+
                 .build();
 
         ClientManager.getClient(this).search(request, new SearchResponse() {
@@ -185,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             @Override
             public void onDeviceFounded(SearchResult result) {
+
                 if (!deviceList.contains(result)) {
                     deviceList.add(result);
                     deviceAdapter.setData(deviceList);
