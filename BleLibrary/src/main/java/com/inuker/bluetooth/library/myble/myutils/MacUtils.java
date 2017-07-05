@@ -35,4 +35,9 @@ public class MacUtils {
         return mMac.toUpperCase();
     }
 
+    public static String getMaReverse(String mac){
+        return null;
+    }
+
+
 }

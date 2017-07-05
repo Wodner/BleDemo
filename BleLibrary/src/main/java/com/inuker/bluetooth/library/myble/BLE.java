@@ -171,6 +171,8 @@ public class BLE {
     private static int pointLength;
     private static byte[]  pointsArray;
 
+    private static int lastIndex = 0;
+
     /**
      * BLE 打开notify 后回调
      */
@@ -310,8 +312,22 @@ public class BLE {
                         byte[] num = new byte[1] ;
                         System.arraycopy(value,9,num,0,num.length);
                         sittingFrame = byteToInteger(num);
-                        pointLength=0;
-                        pointsArray = new byte[sittingPoints*3];
+                        if(sittingFrame==0){
+                            if(bleSynListener!=null){
+//                                bleSynListener.onHistoryUserStatusSyn(jsonresult);
+                                new BleRequest().setHistoryUserSynResponse(mContext, mMac, new BleHistoryUserStatusSynListener() {
+                                    @Override
+                                    public void onFinish(boolean isFinish) {
+                                        Log.d(TAG, "同步历史用户状态完成标志... " + isFinish);
+                                    }
+                                });
+                            }
+                        }else {
+                            pointLength=0;
+                            pointsArray = new byte[sittingPoints*3];
+                        }
+
+
                     }else {
                         Log.d(TAG,"总点数：" + sittingPoints + " 当前帧 ： "  + index + " 帧数 ：" + sittingFrame + " --- " + Arrays.toString(currentIndex));
                         byte[] points = new byte[value.length-4];
@@ -498,7 +514,7 @@ public class BLE {
                     System.arraycopy(value,3,currentIndex,0,currentIndex.length);
                     int index = byteToInteger(currentIndex);
                     if(index==0){
-                        byte[] month = new byte[1] ;
+                        byte[] month = new byte[1];
                         System.arraycopy(value,4,month,0,month.length);
                         sittingMonth = byteToInteger(month);
                         byte[] day = new byte[1] ;
@@ -510,13 +526,25 @@ public class BLE {
                         byte[] num = new byte[1] ;
                         System.arraycopy(value,7,num,0,num.length);
                         sittingFrame = byteToInteger(num);
-                        pointLength=0;
-                        pointsArray = new byte[sittingPoints*3];
+                        if(sittingFrame==0){
+                            if(bleSynListener!=null){
+//                                bleSynListener.onHistoryUserStatusSyn(jsonresult);
+                                new BleRequest().setHistoryUserSynResponse(mContext, mMac, new BleHistoryUserStatusSynListener() {
+                                    @Override
+                                    public void onFinish(boolean isFinish) {
+                                        Log.d(TAG, "同步历史用户状态完成标志... " + isFinish);
+                                    }
+                                });
+                            }
+                        }else {
+                            pointLength=0;
+                            pointsArray = new byte[sittingPoints*3];
+                        }
                     }else {
-                        Log.d(TAG,"总点数：" + sittingPoints + " 当前帧 ： "  + index + " 帧数 ：" + sittingFrame + " --- " + Arrays.toString(currentIndex));
+                        Log.d(TAG,"总点数：" + sittingPoints + " ,当前帧 ： "  + index + ",上一帧数：" + lastIndex +  " ,帧数 ：" + sittingFrame + " --- " + Arrays.toString(currentIndex));
                         byte[] points = new byte[value.length-4];
                         System.arraycopy(value,4,points,0,points.length);
-                        if ((index  < sittingFrame)) {
+                        if ((index  < sittingFrame) && (index != lastIndex)) {
                             System.arraycopy(points,0,pointsArray,pointLength,points.length);
                             pointLength = pointLength + points.length;
                         }else if(index == sittingFrame){
@@ -552,6 +580,7 @@ public class BLE {
                             if(bleCurrentStatusListener!=null)
                                 bleCurrentStatusListener.onCurrentStatus(jsonresult);
                         }
+                        lastIndex = index;
                     }
                 }
 
