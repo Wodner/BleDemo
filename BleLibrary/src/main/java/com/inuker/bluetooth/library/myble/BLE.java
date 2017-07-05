@@ -527,15 +527,8 @@ public class BLE {
                         System.arraycopy(value,7,num,0,num.length);
                         sittingFrame = byteToInteger(num);
                         if(sittingFrame==0){
-                            if(bleSynListener!=null){
-//                                bleSynListener.onHistoryUserStatusSyn(jsonresult);
-                                new BleRequest().setHistoryUserSynResponse(mContext, mMac, new BleHistoryUserStatusSynListener() {
-                                    @Override
-                                    public void onFinish(boolean isFinish) {
-                                        Log.d(TAG, "同步历史用户状态完成标志... " + isFinish);
-                                    }
-                                });
-                            }
+                            if(bleCurrentStatusListener!=null)
+                                bleCurrentStatusListener.onCurrentStatus(false,"");
                         }else {
                             pointLength=0;
                             pointsArray = new byte[sittingPoints*3];
@@ -578,7 +571,7 @@ public class BLE {
                                 e.printStackTrace();
                             }
                             if(bleCurrentStatusListener!=null)
-                                bleCurrentStatusListener.onCurrentStatus(jsonresult);
+                                bleCurrentStatusListener.onCurrentStatus(true,jsonresult);
                         }
                         lastIndex = index;
                     }

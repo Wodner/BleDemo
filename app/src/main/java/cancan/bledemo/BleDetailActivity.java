@@ -412,17 +412,21 @@ public class BleDetailActivity extends AppCompatActivity {
             case R.id.btn_get_current_user_status:
                 mBleRequest.getCurrentUserStatus(mContext, bleMac, new BleCurrentUserStatusListener() {
                     @Override
-                    public void onCurrentStatus(String result) {
-                        Log.d(TAG, " 返回信息 -------- >  " + result);
-                        List<UserStatusDataModel> sittingDataModelList = new ArrayList<UserStatusDataModel>();
-                        UserStatusDataModel sittingDataModel =  JsonParser.parseWithGson(UserStatusDataModel.class,result);
-                        sittingDataModelList.add(sittingDataModel);
-                        if(sittingDataModelList.size()>0){
-                            Intent intent = new Intent();
-                            intent.setClass(BleDetailActivity.this, BleHistoryUserStatusActivity.class);
-                            intent.putExtra("history_user", (Serializable) sittingDataModelList);
-                            intent.putExtra("title","当前用户状态数据");
-                            startActivity(intent);
+                    public void onCurrentStatus(boolean has,String result) {
+                        Log.d(TAG, has + " ,返回信息 -------- >  " + result);
+                        if(has){
+                            List<UserStatusDataModel> sittingDataModelList = new ArrayList<UserStatusDataModel>();
+                            UserStatusDataModel sittingDataModel =  JsonParser.parseWithGson(UserStatusDataModel.class,result);
+                            sittingDataModelList.add(sittingDataModel);
+                            if(sittingDataModelList.size()>0){
+                                Intent intent = new Intent();
+                                intent.setClass(BleDetailActivity.this, BleHistoryUserStatusActivity.class);
+                                intent.putExtra("history_user", (Serializable) sittingDataModelList);
+                                intent.putExtra("title","当前用户状态数据");
+                                startActivity(intent);
+                            }else {
+                                Toast.makeText(mContext,"没有用户状态数据",Toast.LENGTH_SHORT).show();
+                            }
                         }else {
                             Toast.makeText(mContext,"没有用户状态数据",Toast.LENGTH_SHORT).show();
                         }

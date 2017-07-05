@@ -7,5 +7,5 @@ package com.inuker.bluetooth.library.myble.callback;
  */
 
 public interface BleCurrentUserStatusListener {
-    void onCurrentStatus(String result);
+    void onCurrentStatus(boolean isHas,String result);
 }
